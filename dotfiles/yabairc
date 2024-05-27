@@ -23,10 +23,10 @@ yabai -m config external_bar               all:40:0       \
                 mouse_action2              resize         \
                 mouse_drop_action          swap           \
                                                           \
-                top_padding                8              \
-                bottom_padding             8              \
-                left_padding               8              \
-                right_padding              8              \
+                top_padding                10             \
+                bottom_padding             10             \
+                left_padding               10             \
+                right_padding              10             \
                 window_gap                 10
 
 # Exclude problematic apps from being managed:
