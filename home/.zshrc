@@ -163,6 +163,12 @@ nnn ()
     #      NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
     export NNN_TMPFILE="${XDG_CONFIG_HOME:-$HOME/.config}/nnn/.lastd"
 
+    # Export a global FIFO path for preview-tui plugin
+    export NNN_FIFO=/tmp/nnn.fifo
+
+    # Assign keybinds to plugins using ';' shortcut.
+    export NNN_PLUG='f:finder;d:diffs;p:preview-tui'
+
     # Unmask ^Q (, ^V etc.) (if required, see `stty -a`) to Quit nnn
     # stty start undef
     # stty stop undef
