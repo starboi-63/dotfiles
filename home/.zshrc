@@ -148,7 +148,7 @@ unset __conda_setup
 # <<< conda initialize <<<
 
 # Configure 'cd' on quit for 'nnn'
-nnn ()
+n ()
 {
     # Block nesting of nnn in subshells
     [ "${NNNLVL:-0}" -eq 0 ] || {

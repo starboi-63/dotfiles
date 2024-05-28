@@ -23,11 +23,11 @@ yabai -m config external_bar               all:40:0       \
                 mouse_action2              resize         \
                 mouse_drop_action          swap           \
                                                           \
-                top_padding                14             \
-                bottom_padding             14             \
-                left_padding               14             \
-                right_padding              14             \
-                window_gap                 14
+                top_padding                18             \
+                bottom_padding             18             \
+                left_padding               18             \
+                right_padding              18             \
+                window_gap                 18
 
 # Exclude problematic apps from being managed:
 yabai -m rule --add app="^(LuLu|Calculator|Software Update|Dictionary|VLC|System Preferences|System Settings|zoom.us|Photo Booth|Archive Utility|Python|LibreOffice|App Store|Steam|Alfred|Activity Monitor|Discord)$" manage=off
