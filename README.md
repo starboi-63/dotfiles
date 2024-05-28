@@ -1,2 +1,8 @@
 # dotfiles
-My personal configuration for MacOS
+My personal configurations for:
+- vim
+- kitty
+- yabai
+- JankyBorder
+- SketchyBar 
+- skhd
