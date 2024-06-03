@@ -3,6 +3,7 @@
 source "$CONFIG_DIR/icons.sh"
 
 wifi=(
+  icon.font="$FONT:Bold:14.0"
   padding_right=7
   label.width=0
   icon="$WIFI_DISCONNECTED"

@@ -11,7 +11,7 @@ export ORANGE=0xfffab387
 export MAGENTA=0xffcba6f7
 export GREY=0xff9399b2
 export TRANSPARENT=0x00000000
-export BG0=0xd91e1e2e
+export BG0=0xcd1e1e2e
 export BG1=0x60313244
 export BG2=0x6045475a
 
