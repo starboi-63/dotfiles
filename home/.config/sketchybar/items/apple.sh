@@ -15,13 +15,13 @@ apple_logo=(
 
 apple_prefs=(
   icon=$PREFERENCES
-  label="Preferences"
+  label="Settings"
   click_script="open -a 'System Preferences'; $POPUP_OFF"
 )
 
 apple_activity=(
   icon=$ACTIVITY
-  label="Activity"
+  label="Activity Monitor"
   click_script="open -a 'Activity Monitor'; $POPUP_OFF"
 )
 
