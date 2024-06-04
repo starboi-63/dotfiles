@@ -1,6 +1,7 @@
 #!/bin/bash
 
-WIDTH=100
+source "$CONFIG_DIR/constants.sh"
+WIDTH=$VOLUME_BAR_WIDTH
 
 volume_change() {
   source "$CONFIG_DIR/icons.sh"
@@ -23,7 +24,7 @@ volume_change() {
 
   INITIAL_WIDTH="$(sketchybar --query $NAME | jq -r ".slider.width")"
   if [ "$INITIAL_WIDTH" -eq "0" ]; then
-    sketchybar --animate tanh 30 --set $NAME slider.width=$WIDTH 
+    sketchybar --animate tanh 30 --set $NAME slider.width=$WIDTH
   fi
 
   sleep 2

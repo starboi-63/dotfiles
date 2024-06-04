@@ -72,7 +72,7 @@ update ()
            --set spotify.anchor drawing=on                      )
   else
     args+=(--set spotify.anchor drawing=off popup.drawing=off
-           --set spotify.play icon=􀊄                         )
+           --set spotify.play icon=􀊄                        )
   fi
   sketchybar -m "${args[@]}"
 }

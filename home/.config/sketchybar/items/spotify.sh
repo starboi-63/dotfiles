@@ -6,7 +6,7 @@ POPUP_SCRIPT="sketchybar -m --set spotify.anchor popup.drawing=toggle"
 spotify_anchor=(
   script="$PLUGIN_DIR/spotify.sh"
   click_script="$POPUP_SCRIPT"
-  padding_left=6
+  padding_left=0
   popup.horizontal=on
   popup.align=center
   popup.height=150
@@ -150,7 +150,7 @@ spotify_controls=(
 )
 
 sketchybar --add event spotify_change $SPOTIFY_EVENT             \
-           --add item spotify.anchor e                           \
+           --add item spotify.anchor q                           \
            --set spotify.anchor "${spotify_anchor[@]}"           \
            --subscribe spotify.anchor mouse.entered mouse.exited \
                                       mouse.exited.global        \
