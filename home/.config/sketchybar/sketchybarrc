@@ -2,9 +2,13 @@
 
 source "$CONFIG_DIR/colors.sh" # Loads all defined colors
 source "$CONFIG_DIR/icons.sh" # Loads all defined icons
+source "$CONFIG_DIR/constants.sh" # Loads all defined constants
 
 ITEM_DIR="$CONFIG_DIR/items" # Directory where the items are configured
 PLUGIN_DIR="$CONFIG_DIR/plugins" # Directory where all the plugin scripts are stored
+
+# Initialize the temporary file with the default media max_chars value if it doesn't exist
+echo "$MEDIA_MAX_CHARS" > "$MAX_CHARS_FILE"
 
 FONT="SF Pro" # Needs to have Regular, Bold, Semibold, Heavy and Black variants
 PADDINGS=3 # All paddings use this value (icon, label, background)
