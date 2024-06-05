@@ -1,14 +1,38 @@
 #!/bin/bash
 
 source "$CONFIG_DIR/constants.sh"
+
+# Function to read the current media max_chars from a file
+read_max_chars() {
+  cat "$MAX_CHARS_FILE"
+}
+
+# Function to write the current media max_chars to a file
+write_max_chars() {
+  echo "$1" > "$MAX_CHARS_FILE"
+}
+
 WIDTH=$VOLUME_BAR_WIDTH
 
 detail_on() {
-  sketchybar --animate tanh 30 --set volume slider.width=$WIDTH
+  CURRENT_CHARS=$(read_max_chars)
+  NEW_CHARS=$((CURRENT_CHARS - VOLUME_SHRINK))
+
+  sketchybar --animate tanh 30 --set volume slider.width=$WIDTH    \
+             --set media label.max_chars=$NEW_CHARS
+
+  write_max_chars $NEW_CHARS
 }
 
 detail_off() {
+  CURRENT_CHARS=$(read_max_chars)
+  NEW_CHARS=$((CURRENT_CHARS + VOLUME_SHRINK))
+
   sketchybar --animate tanh 30 --set volume slider.width=0
+  sleep 0.3
+  sketchybar --set media label.max_chars=$NEW_CHARS
+
+  write_max_chars $NEW_CHARS
 }
 
 toggle_detail() {
