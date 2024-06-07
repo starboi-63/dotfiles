@@ -6,7 +6,7 @@ lalt - n : yabai -m space --create
 lalt - i : yabai -m space --focus prev
 lalt - o : yabai -m space --focus next
 
-# Delete the current space: lalt + d
+# Delete the current space: lalt + w
 lalt - w : yabai -m space --destroy
 
 # Space Navigation (four spaces per display): lalt - {1, 2, 3, 4}
