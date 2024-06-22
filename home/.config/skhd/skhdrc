@@ -45,7 +45,7 @@ shift + lalt - l : yabai -m window --warp east || $(yabai -m window --display ea
 # Toggle split orientation of the selected windows node: shift + lalt - s
 shift + lalt - s : yabai -m window --toggle split
 
-# Moving windows between spaces: shift + lalt - {1, 2, 3, 4, p, n } (Assumes 4 Spaces Max per Display)
+# Moving windows between spaces: shift + lalt - {1, 2, 3, 4, 5, i, o } (Assumes 5 Spaces Max per Display)
 shift + lalt - 1 : SPACES=($(yabai -m query --displays --display | jq '.spaces[]')) && [[ -n $SPACES[1] ]] \
                   && yabai -m window --space $SPACES[1]
 
@@ -58,8 +58,11 @@ shift + lalt - 3 : SPACES=($(yabai -m query --displays --display | jq '.spaces[]
 shift + lalt - 4 : SPACES=($(yabai -m query --displays --display | jq '.spaces[]')) && [[ -n $SPACES[4] ]] \
                   && yabai -m window --space $SPACES[4]
 
-shift + lalt - p : yabai -m window --space prev && yabai -m space --focus prev
-shift + lalt - n : yabai -m window --space next && yabai -m space --focus next
+shift + lalt - 5 : SPACES=($(yabai -m query --displays --display | jq '.spaces[]')) && [[ -n $SPACES[5] ]] \
+                  && yabai -m window --space $SPACES[5]
+
+shift + lalt - i : yabai -m window --space prev && yabai -m space --focus prev
+shift + lalt - o : yabai -m window --space next && yabai -m space --focus next
 
 # Mirror Space on X and Y Axis: shift + lalt - {x, y}
 shift + lalt - x : yabai -m space --mirror x-axis
