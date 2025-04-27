@@ -1,0 +1,5 @@
+# Font
+font-family = "MesloLGS NF"
+
+# Color Scheme
+theme = catppuccin-mocha.conf
