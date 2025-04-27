@@ -184,6 +184,3 @@ n ()
         rm -f -- "$NNN_TMPFILE" > /dev/null
     }
 }
-
-# Homebrew
-eval "$(/opt/homebrew/bin/brew shellenv)"
