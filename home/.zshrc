@@ -130,7 +130,7 @@ neofetch
 # For SAMD51P20A (Brown Space Engineering)
 alias arm="env /usr/bin/arch -arm64 /bin/zsh --login"
 alias intel="env /usr/bin/arch -x86_64 /bin/zsh --login"
-export PATH="/Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/:$PATH"
+export PATH="/Applications/ArmGNUToolchain/14.2.rel1/arm-none-eabi/bin/:$PATH"
 
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
@@ -184,3 +184,7 @@ n ()
         rm -f -- "$NNN_TMPFILE" > /dev/null
     }
 }
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
