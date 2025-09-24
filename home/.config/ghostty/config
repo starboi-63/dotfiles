@@ -3,7 +3,7 @@ font-family = MesloLGS NF
 font-size = 12.5
 
 # Color Scheme
-theme = catppuccin-mocha
+theme = catppuccin-mocha.conf
 
 # Background
 background-opacity = 0.97
