@@ -10,6 +10,7 @@ My personal configurations for:
 - [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
 - [Ghostty](https://ghostty.org/)
 - [kitty](https://sw.kovidgoyal.net/kitty/)
+- [Zellij](https://zellij.dev/)
 - [yabai](https://github.com/koekeishiya/yabai)
 - [skhd](https://github.com/koekeishiya/skhd)
 - [SketchyBar](https://github.com/FelixKratz/SketchyBar)
