@@ -1,8 +1,8 @@
 # Fedora Plasma configuration
 
-Krohnkite handles tiling inside KWin. A native Plasma bar shows workspaces, application icons, CPU and network usage, the system tray, and a compact clock. The bottom dock contains the launcher, task icons, and Peek at Desktop.
+Adds a custom top bar, a styled bottom dock, and shortcuts for workspace switching and window tiling.
 
-Requires Plasma 6.7 or newer on Wayland. The desktop has been exercised on Fedora 44 with Plasma 6.7.4–6.7.5 and Breeze Dark. Multiple physical monitors and a fresh Kinoite installation remain unverified. Panel styling uses version-sensitive KDE internals documented in [API.md](API.md).
+Requires Plasma 6.7 or newer on Wayland.
 
 ## Configuration
 
@@ -100,3 +100,5 @@ python3 tests/reservation.py
 python3 tests/opacity.py
 python3 tests/rules.py
 ```
+
+KDE integration details are documented in [API.md](API.md).
