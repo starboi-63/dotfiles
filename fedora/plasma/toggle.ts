@@ -1,8 +1,8 @@
 (() => {
     const bars = panels().filter(panel => panel.location === "top"
-        && panel.widgets()?.some(widget => widget.type === "com.starboi.workspaces"));
+        && panel.widgets()?.some(widget => widget.type === "com.starboi.bar"));
     if (!bars.length) {
-        throw new Error("No workspace panel is available.");
+        throw new Error("No top bar is available.");
     }
     const floating = !bars.every(panel => panel.floating);
     for (const bar of bars) {

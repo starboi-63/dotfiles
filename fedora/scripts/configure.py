@@ -84,7 +84,7 @@ def main():
     panel_script = (ROOT / ".build/plasma/panels.js").read_text()
     style = json.loads((ROOT / "style.json").read_text())
     packages = [("KWin/Script", "krohnkite"), ("KWin/Script", "workspace-shortcuts"),
-                ("Plasma/Applet", "com.starboi.workspaces")]
+                ("Plasma/Applet", "com.starboi.bar")]
     if style["dock"]["matchBarOpacity"]:
         packages.append(("Plasma/Applet", "com.starboi.dockappearance"))
     for structure, plugin in packages:

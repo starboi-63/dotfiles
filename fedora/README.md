@@ -51,7 +51,7 @@ Installed packages live under `$XDG_DATA_HOME`, normally `~/.local/share`:
 
 - `kwin/scripts/krohnkite`
 - `kwin/scripts/workspace-shortcuts`
-- `plasma/plasmoids/com.starboi.workspaces`
+- `plasma/plasmoids/com.starboi.bar`
 - `plasma/plasmoids/com.starboi.dockappearance` when enabled
 
 Configuration modifies these files under `$XDG_CONFIG_HOME`, normally `~/.config`:
@@ -85,15 +85,13 @@ On the US keyboard layout, Shift+Alt+1…9 is stored as `Alt+!` through `Alt+(` 
 
 ## Development checks
 
-Build first, then run JavaScript tests with Node.js:
+After building, check desktop operations, panel configuration, widget migration, and tiling:
 
 ```sh
 node --test tests/*.cjs
 ```
 
-The tests cover desktop boundaries, rejected operations, repeated panel configuration, widget migration, and the patched upstream tiling engine. They use substitutes for desktop services and do not prove physical keyboard delivery or multi-monitor behavior.
-
-Qt regression tests require PySide6 and KDE's installed QML modules. They use offscreen scenes and leave desktop configuration unchanged:
+Check tray sizing, tooltips, panel spacing, opacity restoration, and window rules with PySide6 and KDE's QML modules:
 
 ```sh
 python3 tests/tray.py
@@ -102,5 +100,3 @@ python3 tests/reservation.py
 python3 tests/opacity.py
 python3 tests/rules.py
 ```
-
-These retain coverage for startup icon resizing, tooltip flicker, panel reservation timing, opacity restoration, and window-rule precedence. The rule test uses native KConfig commands against a temporary directory. Run native KDE tools with access to the host libraries; do not launch a second Plasma or KWin session under the same user.

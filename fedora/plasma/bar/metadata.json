@@ -1,9 +1,9 @@
 {
   "KPackageStructure": "Plasma/Applet",
   "KPlugin": {
-    "Id": "com.starboi.workspaces",
+    "Id": "com.starboi.bar",
     "Name": "Workspace Bar",
-    "Description": "Desktop numbers and window icons for each monitor",
+    "Description": "Workspaces, system metrics, and panel appearance",
     "Version": "1.0.0",
     "License": "MIT",
     "Category": "Windows and Tasks",

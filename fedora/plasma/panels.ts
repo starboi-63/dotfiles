@@ -1,5 +1,5 @@
 (() => {
-    const workspacePlugin = "com.starboi.workspaces";
+    const barPlugin = "com.starboi.bar";
     const dockPlugin = "com.starboi.dockappearance";
     const existingPanels = panels();
     if (existingPanels.some(panel => !Number.isInteger(panel.screen) || panel.screen < 0)) {
@@ -16,7 +16,7 @@
         throw new Error("Plasma returned no valid active screen IDs.");
     }
 
-    const requiredWidgets = [workspacePlugin, "org.kde.plasma.kickoff", "org.kde.plasma.icontasks",
+    const requiredWidgets = [barPlugin, "org.kde.plasma.kickoff", "org.kde.plasma.icontasks",
         "org.kde.plasma.systemtray", "org.kde.plasma.digitalclock", "org.kde.plasma.showdesktop"];
     if (style.dock.matchBarOpacity) {
         requiredWidgets.push(dockPlugin);
@@ -143,7 +143,7 @@
     const plans = screenIds.map(screen => {
         const bottom = existingPanels.filter(panel => panel.screen === screen && panel.location === "bottom");
         const top = existingPanels.filter(panel => panel.screen === screen && panel.location === "top"
-            && panelWidgets(panel).some(widget => widget.type === workspacePlugin));
+            && panelWidgets(panel).some(widget => widget.type === barPlugin));
         if (bottom.length > 1 || top.length > 1) {
             throw new Error(`Screen ${screen} has multiple matching panels. Select a layout before applying.`);
         }
@@ -165,7 +165,7 @@
         }
         if (!plan.top) {
             const top = createPanel(screen, "top");
-            addWidget(top, workspacePlugin);
+            addWidget(top, barPlugin);
             plan.top = top;
         }
     }
@@ -181,9 +181,9 @@
         setPanelValue(bottom, "offset", 0);
         setPanelValue(bottom, "hiding", "autohide");
         setPanelValue(bottom, "floating", true);
-        const workspace = panelWidgets(top).find(widget => widget.type === workspacePlugin);
-        if (!workspace) {
-            throw new Error(`Panel ${top.id} has no workspace widget.`);
+        const bar = panelWidgets(top).find(widget => widget.type === barPlugin);
+        if (!bar) {
+            throw new Error(`Panel ${top.id} has no bar widget.`);
         }
         const rightWidgets: PlasmaWidget[] = [];
         for (const plugin of ["org.kde.plasma.systemtray", "org.kde.plasma.digitalclock"]) {
@@ -199,7 +199,7 @@
             rightWidgets.push(source ? moveWidget(bottom, top, widget) : widget);
         }
 
-        configureWidget(workspace, "General", {
+        configureWidget(bar, "General", {
             maximumIcons: style.workspaces.maximumIcons,
             keepFloating: style.bar.keepFloating,
             backgroundOpacity: style.bar.opacity,

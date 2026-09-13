@@ -8,9 +8,9 @@ const test = require("node:test");
 
 const source = fs.readFileSync(path.join(__dirname, "../.build/plasma/panels.js"), "utf8")
     .replace("const style = ", "const style = overrides ?? ");
-const workspacePlugin = "com.starboi.workspaces";
+const barPlugin = "com.starboi.bar";
 const dockPlugin = "com.starboi.dockappearance";
-const widgetTypes = [workspacePlugin, dockPlugin, "org.kde.plasma.kickoff", "org.kde.plasma.icontasks",
+const widgetTypes = [barPlugin, dockPlugin, "org.kde.plasma.kickoff", "org.kde.plasma.icontasks",
     "org.kde.plasma.systemtray", "org.kde.plasma.digitalclock", "org.kde.plasma.showdesktop"];
 
 function session(screens = [0]) {
@@ -161,7 +161,7 @@ test("converts stock panels into docks and preserves widget identities on repeat
     assert.deepEqual(state.panels.map(panel => panel.items.map(widget => widget.id)), membership);
     assert.equal(top.floating, false);
     assert.equal(state.panels.length, 4);
-    assert.equal(state.panels.flatMap(panel => panel.items).filter(widget => widget.type === workspacePlugin).length, 2);
+    assert.equal(state.panels.flatMap(panel => panel.items).filter(widget => widget.type === barPlugin).length, 2);
 });
 
 test("matches dock opacity and restores native behavior without duplicate widgets", () => {
@@ -234,7 +234,7 @@ test("rejects stale panel handles before configuration", () => {
 test("detects ignored panel setters", () => {
     const state = session();
     const top = state.makePanel(0, "top");
-    top.addWidget(workspacePlugin);
+    top.addWidget(barPlugin);
     Object.defineProperty(top, "height", { get: () => 40, set: () => {}, configurable: true });
     assert.throws(state.apply, /did not accept height/);
     assert.equal(state.writes.length, 0);
