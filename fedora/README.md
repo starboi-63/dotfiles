@@ -8,21 +8,14 @@ Requires Plasma 6.7 or newer on Wayland. The desktop has been exercised on Fedor
 
 | File | Purpose |
 | --- | --- |
-| [style.json](style.json) | Bar, workspace, tray, clock, metric, and tooltip appearance. |
+| [style.json](style.json) | Appearance values. Every setting is explained in the [style reference](STYLE.md). |
 | [shortcuts.json](shortcuts.json) | Native KWin and custom shortcut assignments. |
 | [settings.json](settings.json) | Desktop behavior, Columns layout, and initial window rules. |
 | [dependencies.json](dependencies.json) | Pinned Krohnkite archive and checksum. |
 
-Rebuild and upgrade affected widgets after editing appearance values. Run configuration again for changes to panel settings, shortcuts, or tiling gaps. Krohnkite settings and package changes require logout/login.
+After editing appearance values, rebuild and upgrade affected widgets. Run `scripts/configure.py` again to apply panel settings, shortcuts, or tiling gaps. Log out and back in to load Krohnkite changes.
 
-- `bar.opacity` is background strength from 0 to 100. The default is 33. It multiplies theme opacity while retaining crisp text, native blur, and shadows.
-- `bar.padding` controls tiling gaps and the emblem's left margin. Breeze supplies the panel's outer floating inset, which the reservation adapter includes in available window space.
-- `dock.matchBarOpacity` applies `bar.opacity` to the dock. Disabling it restores native theme bindings. The helper is visible only in panel edit mode or when it reports a compatibility error.
-- `status.size` controls tray glyphs in logical pixels. `status.clockFontSize` controls the native clock in points. Their defaults preserve the compact desktop shown in the screenshot.
-
-The bar's configuration dialog can override opacity, persistent floating margins, and the visible icon limit. These local preferences are reset when configuration is reapplied. Changing the bar's opacity slider does not update the dock until the shared preference is applied from `style.json`.
-
-The optional [keyboard profile](keyboard/README.md) is separate from desktop installation.
+The bar's settings dialog also lets you change background opacity, floating behavior, and the number of icons per workspace. Running `scripts/configure.py` replaces those local choices with values from `style.json`. To give both bars the same opacity, edit `style.json` and reapply the configuration; the top bar's slider changes only the top bar.
 
 ## Build
 
