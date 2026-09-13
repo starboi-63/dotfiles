@@ -1,30 +1,31 @@
 # KDE integration notes
 
-The TypeScript declarations cover the APIs this repository consumes. They were checked against KDE 6.7.4 source; they are maintained locally, not supplied by KDE. Strict compilation checks our declarations, while runtime readbacks catch observable failures. Neither proves that an API remains compatible after a KDE update.
+The [KWin](kwin/shortcuts/api.d.ts) and [Plasma](plasma/api.d.ts) declarations describe the APIs used by this configuration. Runtime readbacks verify desktop, panel, and shortcut changes.
 
 ## KWin and Plasma scripts
 
-| Interface | Contract |
+| Interface | Integration |
 | --- | --- |
-| [KWin workspace](https://github.com/KDE/kwin/blob/v6.7.4/src/scripting/workspace_wrapper.cpp) | Desktop creation, removal, and per-output selection return void. Check resulting state. Output and current-desktop handles may be absent. Save desktop IDs before removal invalidates handles. |
-| [KWin windows](https://github.com/KDE/kwin/blob/v6.7.4/src/window.h) | Desktop membership is writable. An empty list means all desktops. Check assignment before following a moved window. |
-| [Shortcut registration](https://github.com/KDE/kwin/blob/v6.7.4/src/scripting/scripting.cpp) | Registration success does not confirm a key assignment. The configurator checks KGlobalAccel ownership and retained alternatives separately. |
-| [Shifted shortcuts](https://github.com/KDE/kwin/blob/v6.7.4/src/xkb.cpp) | KWin removes consumed Shift when matching punctuation. Physical chords and stored shortcut strings can differ. |
-| [Panel and widget creation](https://github.com/KDE/plasma-workspace/blob/v6.7.4/shell/scripting/containment.cpp) | Creation can return an error or missing handle. Moving an existing widget should preserve its ID and change panel membership. Removal is deferred. |
-| [Widget configuration](https://github.com/KDE/plasma-workspace/blob/v6.7.4/shell/scripting/applet.cpp) | Reads return QVariant values; writes and reloads return void. Check key presence before supplying a typed default, which can otherwise conceal a rejected write. |
-| [Panel settings](https://github.com/KDE/plasma-workspace/blob/v6.7.4/shell/scripting/panel.cpp) | The 6.7.4 opacity setter targets the wrong native property. Write `panelOpacity` through KConfig and reload panel settings before checking the result. |
-| [Panel order](https://github.com/KDE/plasma-desktop/blob/v6.7.4/containments/panel/LayoutManager.js) | Save `General/AppletOrder` explicitly. The scripted widget index setter does not establish order in 6.7.4; reload Plasma to apply it. |
+| [KWin workspace](https://github.com/KDE/kwin/blob/v6.7.4/src/scripting/workspace_wrapper.cpp) | Desktop operations return `void`. Readbacks verify desktop counts and selection. IDs are saved before removal invalidates handles. |
+| [KWin windows](https://github.com/KDE/kwin/blob/v6.7.4/src/window.h) | Desktop membership is writable. An empty list means all desktops. Movement checks the assignment before following the window. |
+| [Shortcut registration](https://github.com/KDE/kwin/blob/v6.7.4/src/scripting/scripting.cpp) | Registers KWin actions. KGlobalAccel readbacks verify key ownership and preserve unrelated alternate shortcuts. |
+| [Shifted shortcuts](https://github.com/KDE/kwin/blob/v6.7.4/src/xkb.cpp) | KWin removes consumed Shift when matching punctuation. On a US layout, `Shift+Alt+2` is stored as `Alt+@`. |
+| [Panel and widget creation](https://github.com/KDE/plasma-workspace/blob/v6.7.4/shell/scripting/containment.cpp) | Validates object type, ID, and panel membership. Moving a widget preserves its ID. Removal is deferred. |
+| [Widget configuration](https://github.com/KDE/plasma-workspace/blob/v6.7.4/shell/scripting/applet.cpp) | Reads return QVariant values. Writes and reloads return `void`. Verification checks key presence and typed readbacks. |
+| [Panel settings](https://github.com/KDE/plasma-workspace/blob/v6.7.4/shell/scripting/panel.cpp) | Saves `panelOpacity` through KConfig, reloads panel settings, and checks the applied opacity. |
+| [Panel order](https://github.com/KDE/plasma-desktop/blob/v6.7.4/containments/panel/LayoutManager.js) | Saves widget IDs in `General/AppletOrder`. Restarting Plasma applies the saved order. |
+| [Window rules](https://github.com/KDE/kwin/blob/v6.7.4/src/rules.h) | Uses Apply Initially (`3`) to clear startup maximization for normal, non-transient windows. Registration appends the rule after existing `General/rules` entries. |
 
-The initial-window rule uses Apply Initially (`3`) to clear startup maximization for normal, non-transient windows. It preserves later user maximization. Registration appends its group to existing `General/rules` entries. See [rule policies](https://github.com/KDE/kwin/blob/v6.7.4/src/rules.h).
-
-Krohnkite must load new code or preferences at a normal login. Live unloading caused a compositor crash during development. The configurator reloads only the separate workspace shortcut helper.
+The configurator reloads the workspace shortcut helper. Krohnkite loads code and settings at login.
 
 ## QML adapters
 
-- **Workspace selection.** Native `setCurrentDesktop` returns false when the desktop is already selected. Skip known no-ops and read current state after a false reply. Output selection and switching are separate D-Bus calls, so an intervening output change remains a multi-monitor race.
-- **Tooltips.** Task Manager exposes application names through `AppName` and captions through `display`. Keep text plain. Native [ToolTipArea](https://github.com/KDE/libplasma/blob/v6.7.4/src/declarativeimports/core/tooltiparea.cpp) creates a separate popup window; an in-panel popup can cover its trigger and repeatedly cancel hover.
-- **Backgrounds.** [Panel.qml](https://github.com/KDE/plasma-desktop/blob/v6.7.4/desktoppackage/contents/views/Panel.qml) exposes six theme background items. Shared opacity bindings preserve object identity during rediscovery and restore native bindings when disabled or removed. Incompatible structure produces an error. The dock helper uses `HiddenStatus` outside edit mode; hidden containers may retain dimensions while being excluded from layout.
-- **Floating space.** [PanelView](https://github.com/KDE/plasma-workspace/blob/v6.7.4/shell/panelview.h) provides thickness, visibility, and edit state. `LayerShell.Window.exclusionZone` reserves thickness plus the theme's floating inset. Update synchronously before the Wayland geometry commit; deferred changes did not reliably trigger tiling. Equal assignments must avoid repeated writes, and teardown restores native reservation.
-- **Tray sizing.** [System tray](https://github.com/KDE/plasma-workspace/blob/v6.7.4/applets/systemtray/qml/main.qml) aliases expose layouts and native [icon containers](https://github.com/KDE/plasma-workspace/blob/v6.7.4/applets/systemtray/qml/AbstractItem.qml). Retain each loader's bindings across item insertion and removal. Recreating every override lets deferred cleanup restore oversized native icons. Keep input handlers and popup state native.
-
-Breeze supplies panel shape, blur, shadow, and floating insets. The native digital clock uses its [configuration schema](https://github.com/KDE/plasma-workspace/blob/v6.7.4/applets/digital-clock/main.xml). These adapters intentionally avoid replacing the clock or tray popup implementations. Other themes or Plasma versions need a fresh compatibility check.
+| Component | Integration |
+| --- | --- |
+| [Workspace selection](plasma/bar/contents/ui/DesktopModel.qml) | Skips already-selected desktops. A false D-Bus reply triggers a readback of the current desktop. |
+| [Tooltips](https://github.com/KDE/libplasma/blob/v6.7.4/src/declarativeimports/core/tooltiparea.cpp) | Uses `AppName` for application names and `display` for window titles. Native `ToolTipArea` shows plain text in a separate popup. |
+| [Backgrounds](https://github.com/KDE/plasma-desktop/blob/v6.7.4/desktoppackage/contents/views/Panel.qml) | Opacity bindings track six theme backgrounds and restore native bindings when disabled or removed. Breeze supplies shape, blur, shadows, and floating insets. |
+| [Dock appearance](plasma/dock/contents/ui/main.qml) | Uses `HiddenStatus` during normal operation. The helper becomes visible during panel editing or when it reports an error. |
+| [Floating space](https://github.com/KDE/plasma-workspace/blob/v6.7.4/shell/panelview.h) | `LayerShell.Window.exclusionZone` reserves panel thickness plus the floating inset. Synchronous updates keep tiling aligned with panel geometry. Teardown restores native reservation. |
+| [Tray sizing](https://github.com/KDE/plasma-workspace/blob/v6.7.4/applets/systemtray/qml/main.qml) | Preserves each [icon container's](https://github.com/KDE/plasma-workspace/blob/v6.7.4/applets/systemtray/qml/AbstractItem.qml) bindings across item insertion and removal. Native tray controls handle input and popups. |
+| [Clock](https://github.com/KDE/plasma-workspace/blob/v6.7.4/applets/digital-clock/main.xml) | Uses Plasma's digital clock configuration for font and date formatting. |
