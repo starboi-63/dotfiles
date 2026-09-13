@@ -10,18 +10,21 @@ interface PanelStyle {
         readonly minimumWidth: number;
         readonly preferredWidth: number;
     };
+    readonly dock: {
+        readonly matchBarOpacity: boolean;
+    };
     readonly status: {
         readonly size: number;
         readonly spacing: number;
-        readonly clockPadding: number;
-        readonly dateTimeSpacing: number;
+        readonly expanderWidth: number;
         readonly fontFamily: string;
         readonly fontWeight: number;
+        readonly clockFontSize: number;
         readonly dateFormat: string;
         readonly chevronDuration: number;
     };
     readonly metrics: {
-        readonly padding: number;
+        readonly rightPadding: number;
         readonly spacing: number;
         readonly fontFamily: string;
         readonly labelSize: number;

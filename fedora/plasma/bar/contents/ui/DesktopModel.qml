@@ -40,6 +40,7 @@ QtObject {
             DBus.SessionBus.asyncCall(new DBus.dbusMessage({service: "org.kde.KWin", path: "/KWin", interface: "org.kde.KWin",
                 member: "setCurrentDesktop", arguments: [position + 1], signature: "(i)"}), reply => {
                 if (reply.value !== true) {
+
                     // Distinguishes unchanged desktop from rejected selection after repeated clicks.
                     DBus.SessionBus.asyncCall(new DBus.dbusMessage({service: "org.kde.KWin", path: "/KWin", interface: "org.kde.KWin",
                         member: "currentDesktop"}), reply => {

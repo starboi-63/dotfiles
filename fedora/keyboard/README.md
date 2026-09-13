@@ -1,8 +1,6 @@
 # Keyboard preferences
 
-`keychron.conf` is a proposed keyd profile for the connected Keychron K17 Max in wired mode (`3434:0a00`). It has not been installed or activated.
-
-The keyd 2.6.0 parser accepted this file. Twenty tests against its input engine verified emitted keys and held modifiers for both sides of the keyboard, including Shift selection. These tests do not replace a live hardware trial. Cached Fedora 44 repository metadata did not contain a keyd package, so an installation source still needs to be chosen before requesting installation approval.
+`keychron.conf` is an optional keyd profile for the Keychron K17 Max in wired mode (`3434:0a00`). It is separate from desktop installation and has not been activated on the test machine.
 
 | Physical keys | Emitted keys |
 | --- | --- |
@@ -13,12 +11,6 @@ The keyd 2.6.0 parser accepted this file. Twenty tests against its input engine 
 | Option with other keys | Alt with those keys |
 | Physical Ctrl | Ctrl |
 
-Both Command keys use the same mapping, as do both Option keys. This replaces Right Alt's usual AltGr behavior on this keyboard. KDE calls Command's original modifier Meta; Linux also calls it Super. Mapping both Command keys removes their original Meta shortcuts. No additional Meta binding is proposed yet.
+Both sides use identical mappings. This replaces Meta shortcuts and Right Alt's AltGr behavior. Wireless modes may expose different device IDs. Terminal copy/paste commonly still requires Ctrl+Shift+C/V.
 
-The profile requires keyd, a system input service. Its declarative configuration would be installed as `/etc/keyd/keychron.conf`. The keyboard selector excludes other vendor/product IDs, including the Razer mouse. Wireless connection modes may expose a different device ID and require another explicit selector.
-
-Application behavior still matters. Home/End may follow an editor's smart-line rules, and terminal copy/paste commonly uses Ctrl+Shift+C/V. This profile implements the requested key translations rather than application-specific macOS emulation.
-
-The existing desktop setup does not install keyd or apply this profile. Installation and a live keyboard test require separate approval. Stopping `keyd.service` restores the original input path. keyd also provides its documented Backspace+Escape+Enter escape sequence.
-
-See [keyd's layer documentation](https://github.com/rvaiya/keyd/blob/v2.6.0/docs/keyd.scdoc) for modifier inheritance and configuration syntax.
+Install keyd separately and place the profile at `/etc/keyd/keychron.conf` to use it. Stopping `keyd.service` restores normal input. The profile passed keyd 2.6.0 parser and input-engine checks; a physical keyboard trial remains necessary. See [keyd's configuration reference](https://github.com/rvaiya/keyd/blob/v2.6.0/docs/keyd.scdoc).

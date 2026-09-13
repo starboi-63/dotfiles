@@ -33,11 +33,6 @@ PlasmoidItem {
         panelView: appearance.panelView
     }
 
-    ClockAppearance {
-        id: clockAppearance
-        panelView: appearance.panelView
-    }
-
     fullRepresentation: RowLayout {
         spacing: Style.config.bar.sectionSpacing
 
@@ -60,14 +55,14 @@ PlasmoidItem {
             currentDesktop: desktops.desktopIds.indexOf(desktops.currentDesktop)
             screenGeometry: Plasmoid.containment.screenGeometry
             maximumIcons: Plasmoid.configuration.maximumIcons
-            errorMessage: desktops.errorMessage || appearance.errorMessage || trayAppearance.errorMessage || clockAppearance.errorMessage
+            errorMessage: desktops.errorMessage || appearance.errorMessage || trayAppearance.errorMessage
 
             onDesktopActivated: position => desktops.changeDesktop(position)
             onDesktopCreated: desktops.createDesktop()
         }
 
         SystemStats {
-            Layout.rightMargin: 0
+            Layout.rightMargin: Style.config.metrics.rightPadding
         }
     }
 }

@@ -1,0 +1,14 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Id": "com.starboi.dockappearance",
+    "Name": "Dock Appearance",
+    "Description": "Matches dock background strength to the configured workspace bar",
+    "Version": "1.0.0",
+    "License": "MIT",
+    "Category": "Appearance",
+    "Icon": "preferences-desktop-theme",
+    "Authors": [{ "Name": "Tanish Makadia" }]
+  },
+  "X-Plasma-API-Minimum-Version": "6.7"
+}

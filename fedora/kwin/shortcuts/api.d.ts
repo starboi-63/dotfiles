@@ -1,4 +1,4 @@
-/** Describes consumed KWin 6.7.4 APIs documented in API.md. */
+/** Describes consumed KWin 6.7 APIs documented in API.md. */
 
 declare class KWinOutput {
     private readonly outputIdentity: never;

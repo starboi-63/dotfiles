@@ -43,7 +43,7 @@ def main():
         actual = json.loads(QMetaObject.invokeMethod(scene, "snapshot", Q_RETURN_ARG(str)))
         assert actual == expected, (name, actual, expected)
         appearance = json.loads(QMetaObject.invokeMethod(scene, "appearance", Q_RETURN_ARG(str)))
-        expected_appearance = {"cellWidth": style["size"] + style["spacing"], "expanderWidth": style["size"] + style["spacing"], "visibleArrows": 1} if scene.property("styling") else {
+        expected_appearance = {"cellWidth": style["size"] + style["spacing"], "expanderWidth": style["expanderWidth"], "visibleArrows": 1} if scene.property("styling") else {
             "cellWidth": 30, "expanderWidth": 22, "visibleArrows": 2,
         }
         assert appearance == expected_appearance, (name, appearance, expected_appearance)

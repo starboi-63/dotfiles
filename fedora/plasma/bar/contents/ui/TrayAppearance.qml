@@ -115,7 +115,7 @@ Item {
     Binding {
         target: root.expander
         property: "iconSize"
-        value: Style.config.status.size + Style.config.status.spacing
+        value: Style.config.status.expanderWidth
         when: root.stylingEnabled && root.expander !== null
         restoreMode: Binding.RestoreBindingOrValue
     }

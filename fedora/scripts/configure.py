@@ -37,7 +37,7 @@ def shortcut_codes(shortcuts):
     return chords
 
 
-def disable_desktop_effects(bus):
+def disable_desktop_transitions(bus):
     """Unloads desktop transitions that remain active after configuration changes."""
     effects = dbus.Interface(bus.get_object("org.kde.KWin", "/Effects"), "org.kde.kwin.Effects")
     for name in ("slide", "fadedesktop"):
@@ -47,22 +47,20 @@ def disable_desktop_effects(bus):
             raise RuntimeError(f"KWin did not unload desktop effect {name}.")
 
 
-def reload_scripts(bus, plugins):
-    """Reloads workspace scripts so installed code and saved settings take effect."""
-    if "krohnkite" in plugins:
-        raise RuntimeError("Krohnkite changes require a normal logout and login.")
+def reload_shortcuts(bus):
+    """Reloads workspace shortcuts without restarting tiler."""
+    plugin = "workspace-shortcuts"
     scripts = dbus.Interface(bus.get_object("org.kde.KWin", "/Scripting"), "org.kde.kwin.Scripting")
-    for plugin in plugins:
-        if scripts.isScriptLoaded(plugin) and not scripts.unloadScript(plugin):
-            raise RuntimeError(f"KWin refused to unload {plugin}.")
+    if scripts.isScriptLoaded(plugin) and not scripts.unloadScript(plugin):
+        raise RuntimeError("KWin refused to unload workspace shortcuts.")
 
-    # Waits for deferred script destruction before requesting new instances.
+    # Waits for deferred script destruction before creating another instance.
     for _ in range(100):
-        if not any(scripts.isScriptLoaded(plugin) for plugin in plugins):
+        if not scripts.isScriptLoaded(plugin):
             break
         time.sleep(0.1)
     else:
-        raise RuntimeError("KWin did not finish unloading workspace scripts.")
+        raise RuntimeError("KWin did not finish unloading workspace shortcuts.")
     bus.call_blocking("org.kde.KWin", "/KWin", "org.kde.KWin", "reconfigure", "", ())
 
 
@@ -84,18 +82,21 @@ def main():
     if not all(bus.name_has_owner(name) for name in ("org.kde.KWin", "org.kde.plasmashell", "org.kde.kglobalaccel")):
         raise RuntimeError("Run configuration inside an active Plasma session.")
     panel_script = (ROOT / ".build/plasma/panels.js").read_text()
-    for structure, plugin in (("KWin/Script", "krohnkite"), ("KWin/Script", "workspace-shortcuts"),
-                              ("Plasma/Applet", "com.starboi.workspaces")):
+    style = json.loads((ROOT / "style.json").read_text())
+    packages = [("KWin/Script", "krohnkite"), ("KWin/Script", "workspace-shortcuts"),
+                ("Plasma/Applet", "com.starboi.workspaces")]
+    if style["dock"]["matchBarOpacity"]:
+        packages.append(("Plasma/Applet", "com.starboi.dockappearance"))
+    for structure, plugin in packages:
         subprocess.run(["kpackagetool6", "--type", structure, "--show", plugin], check=True, stdout=subprocess.DEVNULL)
     shortcuts = json.loads((ROOT / "shortcuts.json").read_text())
     chords = shortcut_codes(shortcuts)
 
     settings = json.loads((ROOT / "settings.json").read_text())
-    style = json.loads((ROOT / "style.json").read_text())
     settings["kwinrc"]["Script-krohnkite"].update({
         "screenGap" + edge: style["bar"]["padding"] for edge in ("Left", "Right", "Top", "Between", "Bottom")
     })
-    changed_scripts = {"workspace-shortcuts"}
+    tiler_changed = False
     for filename, groups in settings.items():
         for group, entries in groups.items():
             for key, value in entries.items():
@@ -103,17 +104,16 @@ def main():
                 location = ["--file", filename, "--group", group, "--key", key]
                 previous = subprocess.check_output(["kreadconfig6", *location], text=True).strip()
                 if previous != encoded and (group == "Script-krohnkite" or key == "krohnkiteEnabled"):
-                    changed_scripts.add("krohnkite")
+                    tiler_changed = True
                 subprocess.run(["kwriteconfig6", *location, encoded], check=True)
                 actual = subprocess.check_output(["kreadconfig6", *location], text=True).strip()
                 if actual != encoded:
                     raise RuntimeError(f"KConfig did not retain {filename}/{group}/{key}.")
     register_window_rules(settings["kwinrulesrc"])
-    if "krohnkite" in changed_scripts:
-        changed_scripts.remove("krohnkite")
+    if tiler_changed:
         print("Krohnkite settings changed. Log out and back in to load them without live script reloads.", flush=True)
-    reload_scripts(bus, sorted(changed_scripts))
-    disable_desktop_effects(bus)
+    reload_shortcuts(bus)
+    disable_desktop_transitions(bus)
     api = dbus.Interface(bus.get_object("org.kde.kglobalaccel", "/kglobalaccel"), "org.kde.KGlobalAccel")
 
     # Waits for enabled KWin scripts to register their actions.

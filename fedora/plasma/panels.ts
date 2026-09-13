@@ -1,5 +1,6 @@
 (() => {
     const workspacePlugin = "com.starboi.workspaces";
+    const dockPlugin = "com.starboi.dockappearance";
     const existingPanels = panels();
     if (existingPanels.some(panel => !Number.isInteger(panel.screen) || panel.screen < 0)) {
         throw new Error("Plasma panels have unassigned screens. Finish startup or resolve inactive panels before applying.");
@@ -17,6 +18,9 @@
 
     const requiredWidgets = [workspacePlugin, "org.kde.plasma.kickoff", "org.kde.plasma.icontasks",
         "org.kde.plasma.systemtray", "org.kde.plasma.digitalclock", "org.kde.plasma.showdesktop"];
+    if (style.dock.matchBarOpacity) {
+        requiredWidgets.push(dockPlugin);
+    }
     for (const plugin of requiredWidgets) {
         if (!knownWidgetTypes.includes(plugin)) {
             throw new Error(`Required Plasma widget is unavailable: ${plugin}.`);
@@ -128,7 +132,7 @@
             use24hFormat: 0,
             showSeconds: 0,
             autoFontAndSize: false,
-            fontSize: 10,
+            fontSize: style.status.clockFontSize,
             fontWeight: style.status.fontWeight,
             fontFamily: style.status.fontFamily,
             showLocalTimezone: false,
@@ -144,7 +148,9 @@
             throw new Error(`Screen ${screen} has multiple matching panels. Select a layout before applying.`);
         }
         if (bottom[0]) {
-            panelWidgets(bottom[0]);
+            if (panelWidgets(bottom[0]).filter(widget => widget.type === dockPlugin).length > 1) {
+                throw new Error(`Screen ${screen} has multiple dock appearance widgets.`);
+            }
         }
         return { screen, bottom: bottom[0], top: top[0] };
     });
@@ -198,6 +204,14 @@
             keepFloating: style.bar.keepFloating,
             backgroundOpacity: style.bar.opacity,
         });
+
+        const dockAppearance = panelWidgets(bottom).find(widget => widget.type === dockPlugin);
+        if (style.dock.matchBarOpacity || dockAppearance) {
+            configureWidget(dockAppearance ?? addWidget(bottom, dockPlugin), "General", {
+                matchBarOpacity: style.dock.matchBarOpacity,
+                backgroundOpacity: style.bar.opacity,
+            });
+        }
 
         const peekPlugin = "org.kde.plasma.showdesktop";
         const topPeek = panelWidgets(top).find(widget => widget.type === peekPlugin);

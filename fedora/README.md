@@ -1,157 +1,115 @@
 # Fedora Plasma configuration
 
-The shared `style.json` refactor is unfinished and is not the active desktop version. A live KWin gap experiment crashed the compositor on September 13. The original Krohnkite package and prior widget were restored, including the compact clock, tooltip fix, and stable tray sizing. After a reboot, a Plasma panel reservation adapter was added and verified with ChatGPT. It adjusts window space on Alt+B without changing Krohnkite. The experimental KWin hook was removed from the build. Do not deploy the remaining style draft until its layout and lifecycle checks are complete. See [TESTING.md](TESTING.md).
+Krohnkite handles tiling inside KWin. A native Plasma bar shows workspaces, application icons, CPU and network usage, the system tray, and a compact clock. The bottom dock contains the launcher, task icons, and Peek at Desktop.
 
-Krohnkite handles tiling. Native KWin shortcuts handle navigation, and a small helper adds desktop creation, removal, moving a window while following it, and a panel toggle. A native top bar holds a monochrome Fedora emblem, workspaces, CPU and network readings, the system tray, and a clock. The launcher, task icons, and Peek at Desktop stay in the bottom dock.
+Requires Plasma 6.7 or newer on Wayland. The desktop has been exercised on Fedora 44 with Plasma 6.7.4–6.7.5 and Breeze Dark. Multiple physical monitors and a fresh Kinoite installation remain unverified. Panel styling uses version-sensitive KDE internals documented in [API.md](API.md).
 
-The live trial uses Fedora 44 with Plasma 6.7.4 on Wayland. Instant switching was confirmed with physical keyboard input. Physical window-send shortcuts are still awaiting confirmation after a corrected binding. Multiple monitors and a fresh Kinoite installation remain unverified. See [TESTING.md](TESTING.md).
+## Configuration
 
-## Components
-
-| Path | Purpose |
+| File | Purpose |
 | --- | --- |
-| `kwin/shortcuts/` | Five TypeScript actions that supplement KWin's existing shortcuts. |
-| `kwin/krohnkite/` | Minimum size handling applied to the pinned upstream Columns layout. |
-| `plasma/bar/` | Workspace display, sensor readings, compact tooltips, and panel appearance controls. |
-| `plasma/panels.ts` | Creates or reuses native panels and configures appearance, task filtering, and clock. |
-| `plasma/toggle.ts` | Toggles only workspace panels. Compiled code is bundled into the KWin helper for execution by Plasma. |
-| `settings.json` | Enables per-output desktops, disables desktop transitions, selects vertical Columns, and prevents startup maximization from bypassing tiling. |
-| `shortcuts.json` | Maps native and custom actions to keyboard chords. |
-| `dependencies.json` | Records the tested Krohnkite prerelease and its SHA-256 digest. |
-| `scripts/build.py` | Compiles TypeScript and packages the two local extensions. |
-| `scripts/configure.py` | Applies settings, reloads workspace scripts, unloads desktop transitions, assigns shortcuts, and runs panel configuration. |
-| `API.md` | Documents consumed KDE contracts and runtime checks. |
-| `keyboard/` | Proposed, separately tested keyd profile. The desktop setup does not install or activate it. |
+| [style.json](style.json) | Bar, workspace, tray, clock, metric, and tooltip appearance. |
+| [shortcuts.json](shortcuts.json) | Native KWin and custom shortcut assignments. |
+| [settings.json](settings.json) | Desktop behavior, Columns layout, and initial window rules. |
+| [dependencies.json](dependencies.json) | Pinned Krohnkite archive and checksum. |
 
-The custom code implements presentation and integration. Krohnkite supplies the tiling engine. Declarations and offline tests add source without adding runtime services. TypeScript catches mistakes against our declared contracts; native readbacks and integration tests check assumptions those declarations cannot prove.
+Rebuild and upgrade affected widgets after editing appearance values. Run configuration again for changes to panel settings, shortcuts, or tiling gaps. Krohnkite settings and package changes require logout/login.
 
-Krohnkite is an external package downloaded into `.build/` and installed under `$XDG_DATA_HOME/kwin/scripts/krohnkite`. The build applies the documented [column minimums adjustment](kwin/krohnkite/README.md) to a checksum-verified copy. The KWin 6 fork [moved from GitHub to Codeberg](https://github.com/anametologin/krohnkite). Prefer a stable release when it supports this setup. As checked on September 13, 2026, stable `0.9.9.2` uses one current desktop for every output when selecting tiling surfaces. The pinned alpha queries each output's current desktop separately. A comparison using both packages' actual driver code reproduced this difference with simulated outputs. Independent monitor desktops therefore prevent switching to that stable release; physical testing with two monitors remains outstanding.
+- `bar.opacity` is background strength from 0 to 100. The default is 33. It multiplies theme opacity while retaining crisp text, native blur, and shadows.
+- `bar.padding` controls tiling gaps and the emblem's left margin. Breeze supplies the panel's outer floating inset, which the reservation adapter includes in available window space.
+- `dock.matchBarOpacity` applies `bar.opacity` to the dock. Disabling it restores native theme bindings. The helper is visible only in panel edit mode or when it reports a compatibility error.
+- `status.size` controls tray glyphs in logical pixels. `status.clockFontSize` controls the native clock in points. Their defaults preserve the compact desktop shown in the screenshot.
 
-## Build and check
+The bar's configuration dialog can override opacity, persistent floating margins, and the visible icon limit. These local preferences are reset when configuration is reapplied. Changing the bar's opacity slider does not update the dock until the shared preference is applied from `style.json`.
 
-Requires Python 3 and TypeScript. Node.js runs the offline tests. Verified with TypeScript 5.7.3 and Node.js 24.18.0. No npm dependencies are required.
+The optional [keyboard profile](keyboard/README.md) is separate from desktop installation.
 
-Run from this directory:
+## Build
 
-```sh
-python3 scripts/build.py
-tsc --project tests/types/kwin.json
-tsc --project tests/types/plasma.json
-node tests/workspaces.cjs
-node tests/panels.cjs
-```
+Requires Python 3 and a TypeScript compiler. No npm dependencies are needed. Run commands from this directory.
 
-`python3 tests/rules.py` checks idempotent rule registration with native KConfig commands in a temporary directory.
-
-`python3 tests/tray.py` runs the tray lifecycle regression test with PySide6 and the installed KDE QML modules. `python3 tests/tooltip.py` checks sustained hover, dismissal, long titles, and click delivery through native Plasma tooltips. Both use offscreen Qt scenes and do not modify the desktop. PySide6 is a development test dependency, not a dependency of the installed widget.
-
-`python3 tests/reservation.py` checks seventeen panel reservation cases with native Qt layer-shell objects. These include both bar modes, repeated assignments, native overwrites, resizing, edit mode, hiding, removal, and recreation. The installed `org.kde.layershell` QML module is required by the reservation adapter.
-
-The build writes only into `.build/`. It produces `workspaces.kwinscript`, `workspaces.plasmoid`, and `plasma/panels.js`. Archives contain runtime files and metadata, excluding TypeScript declarations and tests. Failed compilation removes previous archives to prevent installation of stale builds.
-
-QML remains the widget's native interface language. KWin and Plasma scripts compile separately without browser or Node.js globals.
-
-The helper mirrors KWin's installed package layout. KWin 6.7.4's [loader](https://github.com/KDE/kwin/blob/v6.7.4/src/scripting/scripting.cpp#L723) requires `contents/code/main.js` for JavaScript scripts. The bar's SVG assets live in `plasma/bar/contents/icons/` and use explicit relative references.
-
-## Install and configure
-
-Requires an active Plasma Wayland session with KWin 6.7 or newer, an existing bottom panel, Python's `dbus` module, `kpackagetool6`, `kwriteconfig6`, and `kreadconfig6`. Version 6.7.4 is the tested target. On a new Kinoite installation, check these requirements before choosing how to supply any missing dependencies.
-
-Choose the desired theme in System Settings first. Both panels and the workspace widget inherit it; the live trial used Breeze Dark.
-
-For a fresh installation, build first, then download the pinned upstream package and verify its digest:
+Download the archive pinned in `dependencies.json`:
 
 ```sh
+mkdir -p .build
 curl --fail --location --output .build/krohnkite.kwinscript https://codeberg.org/anametologin/Krohnkite/releases/download/0.9.10.0_alpha/krohnkite-0.9.10.0_alpha_021c654.kwinscript
-sha256sum --check <<'CHECKSUM'
-971af496ccb51e6306d10409815c4641bdf5504212fcd491336b35e27fa48dea  .build/krohnkite.kwinscript
-CHECKSUM
+python3 scripts/build.py
 ```
 
-Continue only if the checksum passes. Rebuild to produce the patched tiler and run its tests, then install three user packages and configure the session:
+The build validates appearance values, compiles TypeScript, verifies the upstream checksum, and applies the [column minimums fix](kwin/krohnkite/README.md). It writes only to `.build/` and produces `shortcuts.kwinscript`, `bar.plasmoid`, `dock.plasmoid`, and `krohnkite-patched.kwinscript`. Without the downloaded upstream archive, it builds only the three local packages.
+
+## Install
+
+Requires an active Plasma session, an existing bottom panel, Python's `dbus` module, `kpackagetool6`, `kwriteconfig6`, and `kreadconfig6`. Choose the desired theme in System Settings first. The default font is Adwaita Sans; Qt uses an available fallback if it is absent.
 
 ```sh
-python3 scripts/build.py
-node tests/columns.cjs
 kpackagetool6 --type KWin/Script --install .build/krohnkite-patched.kwinscript
-kpackagetool6 --type KWin/Script --install .build/workspaces.kwinscript
-kpackagetool6 --type Plasma/Applet --install .build/workspaces.plasmoid
+kpackagetool6 --type KWin/Script --install .build/shortcuts.kwinscript
+kpackagetool6 --type Plasma/Applet --install .build/bar.plasmoid
+kpackagetool6 --type Plasma/Applet --install .build/dock.plasmoid
 python3 scripts/configure.py
 ```
 
-Use `--upgrade` instead of `--install` when a package already exists. Updated QML and saved panel order require a Plasma shell restart or normal logout/login. A live update can use `systemctl --user restart plasma-plasmashell.service` after configuration. This restarts the shell, not KWin or application windows.
+Skip the dock package when `dock.matchBarOpacity` is disabled. Use `--upgrade` for packages already installed. Log out and back in after installation. For widget-only updates, `systemctl --user restart plasma-plasmashell.service` reloads QML and saved panel order without restarting KWin or application windows. Never hot-reload Krohnkite.
 
-Configuration reloads only the workspace helper. Krohnkite is never reloaded live. If its saved settings change, configuration prints a reminder to log out and back in. The same applies after upgrading Krohnkite itself.
+Configuration creates or reuses one top bar and bottom dock per active screen. Existing tray and clock widgets move to the top bar. Bottom panels become centered, floating, content-sized docks with auto-hide; existing height, native opacity mode, launcher, and pinned tasks are retained. Stock Pager, separators, and expanding spacers are removed. Repeated application preserves panel and widget identities.
 
-## Changes to the session
-
-Package installation writes three directories under `$XDG_DATA_HOME`, normally `~/.local/share`:
+Installed packages live under `$XDG_DATA_HOME`, normally `~/.local/share`:
 
 - `kwin/scripts/krohnkite`
 - `kwin/scripts/workspace-shortcuts`
 - `plasma/plasmoids/com.starboi.workspaces`
+- `plasma/plasmoids/com.starboi.dockappearance` when enabled
 
-Configuration intentionally changes five files under `$XDG_CONFIG_HOME`, normally `~/.config`:
+Configuration modifies these files under `$XDG_CONFIG_HOME`, normally `~/.config`:
 
-| File | Changes |
-| --- | --- |
-| `kwinrc` | Settings listed in `settings.json`. KWin also saves desktops created or removed during use. |
-| `kwinrulesrc` | Registers `initial-tiling` after existing user rules. Normal non-transient windows start unmaximized so Krohnkite can tile them. Later maximize actions remain available. |
-| `kglobalshortcutsrc` | Requested bindings and conflicting chords removed from previous owners. Unrelated alternate chords are preserved and checked. |
-| `plasma-org.kde.plasma.desktop-appletsrc` | Panel order, moved system widgets, obsolete dock Pager/separator removal, task filters, clock, and widget appearance. |
-| `plasmashellrc` | Native panel geometry and appearance. |
+- `kwinrc` and `kwinrulesrc` for desktop behavior, tiling, and initial maximization rules.
+- `kglobalshortcutsrc` for requested shortcuts and conflicting assignments. Unrelated alternate shortcuts are preserved.
+- `plasma-org.kde.plasma.desktop-appletsrc` and `plasmashellrc` for widgets and panel settings.
 
-The script checks package availability and duplicate chords before changing settings. It checks saved settings, assigned chords, and relevant native panel properties afterward. These checks detect failures; they are not a transaction or an automatic rollback system. KDE can also update its ordinary caches and service data during operation.
-
-Back up these files and any existing package directories before applying to another machine. Restore configuration files while logged out of Plasma so running services cannot overwrite them. Removing an extension alone does not restore previous shortcuts or panel contents. A complete restore cycle has not been tested.
-
-Do not test in a second Plasma session under the same user. Separate XDG paths and a private D-Bus session did not isolate earlier service side effects. Use a separate VM or an explicitly disposable desktop for another full integration trial.
-
-## Panel behavior
-
-The script creates or reuses one workspace panel per active screen and rejects ambiguous duplicates. Every bottom panel becomes a centered, floating, content-sized dock with auto-hide. Existing dock height, opacity, launcher, and task pins are preserved. Screens without a dock receive one containing a launcher and task manager. Stock Pager, separator, and spacer widgets are removed so expanding spacers cannot keep the dock full-width. The tray and clock move to the top bar, and Peek at Desktop occupies the dock's right edge. Reapplying configuration keeps existing panel and widget IDs.
-
-The top bar stays visible at full width. Existing tray and clock widgets move to it with their IDs and settings. Peek at Desktop moves to the dock's right edge. Native panel order is saved explicitly because widget movement alone does not guarantee visual order. The clock uses Adwaita Sans at 10 points with regular weight and inline date/time. This font is already installed on the trial machine. Qt falls back to an available font if it is absent. Both panels retain the system theme.
-
-Tiling gaps are eight logical pixels. Plasma ordinarily reserves panel thickness without its floating inset. `PanelReservation.qml` adds that inset to the panel's native Wayland reservation while floating. In edge-to-edge mode, it releases the inset. ChatGPT's tiled frame gained eight pixels of height in full-width mode and lost them again in floating mode during repeated live checks. Maximized windows follow the reserved work area but do not use Krohnkite's extra tiling gap. Fullscreen windows bypass it.
-
-The workspace display shows one icon per window, up to six followed by an overflow count. Minimized icons fade. Compact nine-point tooltips show application name and window title in a native Plasma popup below the bar. The popup cannot overlap its own icon and interrupt hover. KDE controls the tooltip delay. Clicking the selected desktop is a no-op; rapid repeat clicks are also accepted. The plus button creates a desktop. Dock task icons filter to the current screen and desktop.
-
-CPU, upload, and download readings come from KDE's installed sensor API and refresh at most every two seconds. Missing sensors show an em dash. Network rates form two compact rows with adjacent arrows and values. Readouts use Adwaita Sans with tabular digits. No polling shell scripts or additional monitoring daemon are installed.
-
-The tray keeps native controls, tooltips, menus, and status indicators. `TrayAppearance.qml` sizes visible icons to eighteen logical pixels in twenty-eight-pixel cells. Overrides remain attached to existing icon loaders when applications arrive or leave during startup. A single chevron rotates over 140 milliseconds and respects disabled system animations. These visual adjustments use checked Plasma 6.7.4 internals and do not replace KDE's popup implementations or install an icon theme.
-
-Right-click the workspace widget and open its configuration to change background strength, persistent floating margins, or the icon limit. Background strength defaults to 33% of the theme's own background opacity. Text, icons, masks, and native blur are preserved. This is a multiplier, not an exact final pixel alpha.
-
-`Alt+B` switches the top bar between floating and edge-to-edge. It does not change the dock. `PanelAppearance.qml` uses checked Plasma 6.7.4 panel internals to retain floating margins beside tiled or maximized windows. This adapter is version-sensitive and reports incompatible panel backgrounds. Fullscreen applications can still cover the panel. Default settings live in `plasma/bar/contents/config/main.xml`; existing widget preferences take precedence.
-
-The monochrome emblem contains only the Fedora symbol from the installed `fedora-logos` SVG. Its license is included beside the asset. The layout reference was [macOS Sonoma's Apple menu](https://512pixels.net/projects/aqua-screenshot-library/macos-14-sonoma/).
+Back up existing files and package directories before applying to another machine. Readback checks detect rejected changes but do not provide automatic rollback. Restore configuration while logged out of Plasma. Use a separate user or VM for isolated desktop installation tests.
 
 ## Shortcuts
 
-Desktop numbers follow Plasma's shared desktop list. Each monitor independently selects its current desktop. Creating or deleting a desktop changes the shared list.
+Option corresponds to Alt. Desktop numbers use Plasma's shared desktop list; each monitor independently selects its current desktop. Creating or removing a desktop changes the shared list.
 
 | Keys | Action |
 | --- | --- |
 | `Alt+1…9` | Switch to desktop. |
 | `Shift+Alt+1…9` | Send window to desktop without following. |
 | `Alt+I/O` | Switch to previous/next desktop. |
-| `Shift+Alt+I/O` | Move window to previous/next desktop and follow it. |
+| `Shift+Alt+I/O` | Move window to previous/next desktop and follow. |
 | `Alt+N/W` | Create/remove desktop. |
 | `Alt+B` | Toggle top bar floating mode. |
-| `Alt+H/J/K/L` | Focus left/down/up/right. |
-| `Shift+Alt+H/J/K/L` | Reorder windows left/down/up/right. |
-| `Ctrl+Alt+H/J/K/L` | Shrink width/grow height/shrink height/grow width. |
-| `Alt+Space` | Toggle floating. |
 | `Alt+F` | Toggle animated maximization, flush with screen edges and below the bar. |
-| `Shift+Alt+F` | Toggle padded Monocle view and return to the previous tiling layout. |
+| `Shift+Alt+F` | Toggle padded Monocle view and restore the previous layout. |
+| `Alt+H/J/K/L` | Focus left/down/up/right. |
+| `Shift+Alt+H/J/K/L` | Move within or between columns. |
+| `Ctrl+Alt+H/J/K/L` | Shrink width/grow height/shrink height/grow width. |
+| `Alt+Space` | Toggle window floating. |
 
-Shortcut values contain one chord. An empty string clears an action's bindings. `Alt+Shift+F` uses Krohnkite's Monocle layout with `monocleMaximize=false`. Tiled windows share the full padded rectangle, with the focused window in front. A second press restores the previous layout. Padding follows the same Krohnkite gap settings as normal tiling, including changes to available space when the bar floats. Other windows are not minimized. Floating windows remain outside this layout.
+Desktop switching is instant and does not wrap. The final desktop cannot be removed. Monocle expands every tiled window into the padded work area, with the focused window in front. Floating and maximized windows remain outside that layout. Leave native maximization with `Alt+F` before using Monocle.
 
-`Alt+F` uses native maximization with the Maximize effect enabled. It fills the usable work area without outer tiling gaps and leaves the bar visible. Monocle moves tiled geometry without native maximization, so it does not trigger that growth animation. These toggles are independent. Leave native maximization with `Alt+F` before using Monocle. Native fullscreen, which covers the bar, has no assigned chord.
+On the US keyboard layout, Shift+Alt+1…9 is stored as `Alt+!` through `Alt+(` because KWin consumes Shift when matching punctuation. Other keyboard layouts require corresponding symbol bindings. Empty shortcut values clear an action's bindings.
 
-Krohnkite reads its Monocle settings at startup, so changing them requires logout/login. The settings and shortcuts are saved on the trial machine; live padding verification after that login is still pending.
+## Development checks
 
-Desktop navigation does not wrap, and the helper never removes the final desktop. `Alt+Space` replaces KRunner's binding on the trial machine; its two other shortcuts were preserved. Vertical Columns supports the movement and resize bindings. `Alt+Shift+H/L` transfers a tile between columns instead of swapping it with a tile in the other column. Application minimum sizes can produce unequal stack heights. Existing maximized windows must be unmaximized to participate in normal tiling.
+Build first, then run JavaScript tests with Node.js:
 
-On the US layout, physical Shift+Alt+1…9 produces `!@#$%^&*(`. KWin consumes Shift when matching these symbols, so the saved bindings use `Alt+!` through `Alt+(`. A different keyboard layout requires its own corresponding symbol bindings. Native owner readbacks pass; final physical confirmation remains pending.
+```sh
+node --test tests/*.cjs
+```
+
+The tests cover desktop boundaries, rejected operations, repeated panel configuration, widget migration, and the patched upstream tiling engine. They use substitutes for desktop services and do not prove physical keyboard delivery or multi-monitor behavior.
+
+Qt regression tests require PySide6 and KDE's installed QML modules. They use offscreen scenes and leave desktop configuration unchanged:
+
+```sh
+python3 tests/tray.py
+python3 tests/tooltip.py
+python3 tests/reservation.py
+python3 tests/opacity.py
+python3 tests/rules.py
+```
+
+These retain coverage for startup icon resizing, tooltip flicker, panel reservation timing, opacity restoration, and window-rule precedence. The rule test uses native KConfig commands against a temporary directory. Run native KDE tools with access to the host libraries; do not launch a second Plasma or KWin session under the same user.

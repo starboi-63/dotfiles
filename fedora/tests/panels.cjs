@@ -6,9 +6,11 @@ const path = require("node:path");
 const vm = require("node:vm");
 const test = require("node:test");
 
-const source = fs.readFileSync(path.join(__dirname, "../.build/plasma/panels.js"), "utf8");
+const source = fs.readFileSync(path.join(__dirname, "../.build/plasma/panels.js"), "utf8")
+    .replace("const style = ", "const style = overrides ?? ");
 const workspacePlugin = "com.starboi.workspaces";
-const widgetTypes = [workspacePlugin, "org.kde.plasma.kickoff", "org.kde.plasma.icontasks",
+const dockPlugin = "com.starboi.dockappearance";
+const widgetTypes = [workspacePlugin, dockPlugin, "org.kde.plasma.kickoff", "org.kde.plasma.icontasks",
     "org.kde.plasma.systemtray", "org.kde.plasma.digitalclock", "org.kde.plasma.showdesktop"];
 
 function session(screens = [0]) {
@@ -88,6 +90,7 @@ function session(screens = [0]) {
         addWidget(bottom, type);
     }
     const globals = {
+        overrides: JSON.parse(fs.readFileSync(path.join(__dirname, "../style.json"), "utf8")),
         panels: () => [...panels],
         desktops: () => screens.map(screen => ({ id: nextId++, screen, type: "org.kde.plasma.folder" })),
         knownWidgetTypes: [...widgetTypes],
@@ -131,7 +134,7 @@ test("converts stock panels into docks and preserves widget identities on repeat
     assert.equal(state.bottom.items.includes(showDesktop), true);
     assert.equal(state.bottom.lengthMode, "fit");
     assert.deepEqual(state.bottom.items.map(widget => widget.type), [
-        "org.kde.plasma.kickoff", "org.kde.plasma.icontasks", "org.kde.plasma.showdesktop",
+        "org.kde.plasma.kickoff", "org.kde.plasma.icontasks", "org.kde.plasma.showdesktop", dockPlugin,
     ]);
     for (const screen of [0, 1]) {
         const panels = state.panels.filter(panel => panel.screen === screen);
@@ -159,6 +162,35 @@ test("converts stock panels into docks and preserves widget identities on repeat
     assert.equal(top.floating, false);
     assert.equal(state.panels.length, 4);
     assert.equal(state.panels.flatMap(panel => panel.items).filter(widget => widget.type === workspacePlugin).length, 2);
+});
+
+test("matches dock opacity and restores native behavior without duplicate widgets", () => {
+    const state = session();
+    state.apply();
+    const appearance = state.bottom.items.find(widget => widget.type === dockPlugin);
+    assert.equal(appearance.readConfig("matchBarOpacity"), true);
+    assert.equal(appearance.readConfig("backgroundOpacity"), 33);
+    state.globals.overrides.bar.opacity = 45;
+    state.apply();
+    assert.equal(appearance.readConfig("backgroundOpacity"), 45);
+    state.globals.overrides.dock.matchBarOpacity = false;
+    state.apply();
+    assert.equal(appearance.readConfig("matchBarOpacity"), false);
+    state.globals.overrides.dock.matchBarOpacity = true;
+    state.apply();
+    assert.equal(appearance.readConfig("matchBarOpacity"), true);
+    assert.equal(state.bottom.items.filter(widget => widget.type === dockPlugin).length, 1);
+    assert.equal(state.bottom.items.includes(appearance), true);
+});
+
+test("requires appearance package only when matching is enabled", () => {
+    const state = session();
+    state.globals.knownWidgetTypes = widgetTypes.filter(type => type !== dockPlugin);
+    assert.throws(state.apply, /Required Plasma widget is unavailable/);
+    assert.equal(state.writes.length, 0);
+    state.globals.overrides.dock.matchBarOpacity = false;
+    state.apply();
+    assert.equal(state.bottom.items.some(widget => widget.type === dockPlugin), false);
 });
 
 test("returns existing Peek at Desktop to dock and preserves its identity", () => {

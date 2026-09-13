@@ -1,4 +1,4 @@
-/** Describes consumed Plasma 6.7.4 APIs documented in API.md. */
+/** Describes consumed Plasma 6.7 APIs documented in API.md. */
 
 type PanelLocation = "floating" | "desktop" | "fullscreen" | "top" | "bottom" | "left" | "right";
 type PanelOpacity = "adaptive" | "opaque" | "translucent";

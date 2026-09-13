@@ -11,6 +11,7 @@ Item {
     property int appliedZone: -1
     readonly property var panelWindow: panelView?.Window.window ?? null
     readonly property var layerWindow: panelWindow?.LayerShell.Window ?? null
+
     // Matches PanelView::NormalPanel in Plasma's native window API.
     readonly property bool normalPanel: panelWindow?.visibilityMode === 0
     readonly property bool active: enabled && panelWindow !== null

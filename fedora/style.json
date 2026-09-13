@@ -9,19 +9,22 @@
     "minimumWidth": 440,
     "preferredWidth": 640
   },
+  "dock": {
+    "matchBarOpacity": true
+  },
   "status": {
     "size": 18,
     "spacing": 10,
-    "clockPadding": 10,
-    "dateTimeSpacing": 6,
+    "expanderWidth": 24,
     "fontFamily": "Adwaita Sans",
     "fontWeight": 400,
+    "clockFontSize": 10,
     "dateFormat": "ddd MMM d",
     "chevronDuration": 140
   },
   "metrics": {
-    "padding": 10,
-    "spacing": 0,
+    "rightPadding": 4,
+    "spacing": 18,
     "fontFamily": "Adwaita Sans",
     "labelSize": 11,
     "valueSize": 13,

@@ -11,7 +11,7 @@ RowLayout {
     spacing: Style.config.metrics.spacing
 
     PanelToolTip {
-        implicitWidth: cpuReading.implicitWidth + 2 * Style.config.metrics.padding
+        implicitWidth: cpuReading.implicitWidth
         implicitHeight: cpuReading.implicitHeight
         mainText: cpu.status === Sensors.Sensor.Ready ? cpu.name : "CPU sensor unavailable"
 
@@ -24,8 +24,6 @@ RowLayout {
         RowLayout {
             id: cpuReading
             anchors.fill: parent
-            anchors.leftMargin: Style.config.metrics.padding
-            anchors.rightMargin: Style.config.metrics.padding
             spacing: Style.config.metrics.labelSpacing
 
             Controls.Label {
@@ -59,7 +57,7 @@ RowLayout {
             delegate: PanelToolTip {
                 id: reading
                 required property var modelData
-                implicitWidth: networkReading.implicitWidth + 2 * Style.config.metrics.padding
+                implicitWidth: networkReading.implicitWidth
                 implicitHeight: networkReading.implicitHeight
                 mainText: sensor.status === Sensors.Sensor.Ready ? sensor.name : "Network sensor unavailable"
 
@@ -72,8 +70,6 @@ RowLayout {
                 RowLayout {
                     id: networkReading
                     anchors.fill: parent
-                    anchors.leftMargin: Style.config.metrics.padding
-                    anchors.rightMargin: Style.config.metrics.padding
                     spacing: Style.config.metrics.networkSpacing
 
                     Kirigami.Icon {
