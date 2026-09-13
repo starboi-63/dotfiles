@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "../.build/plasma"
+  },
+  "files": [
+    "api.d.ts",
+    "style.d.ts",
+    "panels.ts",
+    "toggle.ts"
+  ]
+}
