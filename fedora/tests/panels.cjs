@@ -81,8 +81,10 @@ function session(screens = [0]) {
     }
 
     const bottom = makePanel(0, "bottom");
+    Object.assign(bottom, { lengthMode: "fill", hiding: "none", alignment: "left", offset: 20, floating: false });
     for (const type of ["org.kde.plasma.kickoff", "org.kde.plasma.pager", "org.kde.plasma.icontasks",
-        "org.kde.plasma.systemtray", "org.kde.plasma.digitalclock", "org.kde.plasma.showdesktop"]) {
+        "org.kde.plasma.panelspacer", "org.kde.plasma.marginsseparator", "org.kde.plasma.systemtray",
+        "org.kde.plasma.digitalclock", "org.kde.plasma.showdesktop"]) {
         addWidget(bottom, type);
     }
     const globals = {
@@ -107,7 +109,16 @@ function session(screens = [0]) {
         apply: () => vm.runInNewContext(source, globals) };
 }
 
-test("moves system controls into top panels and preserves dock settings", () => {
+test("rejects unassigned startup panels before creating duplicates", () => {
+    const state = session();
+    state.bottom.screen = -1;
+    const count = state.panels.length;
+    assert.throws(state.apply, /unassigned screens/);
+    assert.equal(state.panels.length, count);
+    assert.equal(state.writes.length, 0);
+});
+
+test("converts stock panels into docks and preserves widget identities on repeat application", () => {
     const state = session([0, 0, 1, -1]);
     const launcher = state.bottom.items.find(widget => widget.type === "org.kde.plasma.kickoff");
     const showDesktop = state.bottom.items.find(widget => widget.type === "org.kde.plasma.showdesktop");
@@ -119,7 +130,9 @@ test("moves system controls into top panels and preserves dock settings", () => 
     assert.equal(top.items.includes(showDesktop), false);
     assert.equal(state.bottom.items.includes(showDesktop), true);
     assert.equal(state.bottom.lengthMode, "fit");
-    assert.equal(state.bottom.items.some(widget => widget.type === "org.kde.plasma.pager"), false);
+    assert.deepEqual(state.bottom.items.map(widget => widget.type), [
+        "org.kde.plasma.kickoff", "org.kde.plasma.icontasks", "org.kde.plasma.showdesktop",
+    ]);
     for (const screen of [0, 1]) {
         const panels = state.panels.filter(panel => panel.screen === screen);
         assert.deepEqual(panels.map(panel => panel.location).sort(), ["bottom", "top"]);
@@ -128,6 +141,9 @@ test("moves system controls into top panels and preserves dock settings", () => 
             assert.equal(panel.opacity, "translucent");
             assert.equal(panel.hiding, panel.location === "bottom" ? "autohide" : "none");
             assert.equal(panel.floating, true);
+            assert.equal(panel.lengthMode, panel.location === "bottom" ? "fit" : "fill");
+            assert.equal(panel.alignment, "center");
+            assert.equal(panel.offset, 0);
         }
     }
     const clock = top.items.find(widget => widget.type === "org.kde.plasma.digitalclock");

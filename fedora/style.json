@@ -1,0 +1,68 @@
+{
+  "bar": {
+    "height": 46,
+    "padding": 8,
+    "opacity": 33,
+    "keepFloating": true,
+    "sectionSpacing": 12,
+    "logoSize": 20,
+    "minimumWidth": 440,
+    "preferredWidth": 640
+  },
+  "status": {
+    "size": 18,
+    "spacing": 10,
+    "clockPadding": 10,
+    "dateTimeSpacing": 6,
+    "fontFamily": "Adwaita Sans",
+    "fontWeight": 400,
+    "dateFormat": "ddd MMM d",
+    "chevronDuration": 140
+  },
+  "metrics": {
+    "padding": 10,
+    "spacing": 0,
+    "fontFamily": "Adwaita Sans",
+    "labelSize": 11,
+    "valueSize": 13,
+    "labelSpacing": 6,
+    "labelTracking": 0.4,
+    "labelOpacity": 0.7,
+    "cpuWidth": 44,
+    "networkSize": 11,
+    "networkWidth": 52,
+    "networkSpacing": 4,
+    "arrowSize": 10,
+    "arrowOpacity": 0.75
+  },
+  "workspaces": {
+    "maximumIcons": 6,
+    "height": 34,
+    "inset": 2,
+    "spacing": 4,
+    "padding": 12,
+    "iconSpacing": 7,
+    "iconSize": 18,
+    "iconWidth": 20,
+    "iconHeight": 22,
+    "indicatorSize": 3,
+    "indicatorRadius": 2,
+    "cornerRadius": 5,
+    "activeOpacity": 0.22,
+    "hoverOpacity": 0.1,
+    "idleOpacity": 0.04,
+    "borderOpacity": 0.65,
+    "minimizedOpacity": 0.5,
+    "overflowOpacity": 0.7,
+    "emptyOpacity": 0.4,
+    "createWidth": 30,
+    "minimumWidth": 100
+  },
+  "tooltips": {
+    "fontSize": 9,
+    "titleWeight": 600,
+    "spacing": 2,
+    "maximumWidth": 360,
+    "detailOpacity": 0.75
+  }
+}

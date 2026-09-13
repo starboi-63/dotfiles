@@ -16,12 +16,25 @@ def key_code(sequence):
     """Encodes supported single chords using Qt keyboard constants."""
     parts = sequence.split("+")
     key = parts.pop()
-    if key != "Space" and (len(key) != 1 or key not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&"):
+    if key != "Space" and (len(key) != 1 or key not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*("):
         raise ValueError(f"Unsupported shortcut key {key}")
     code = ord(" " if key == "Space" else key)
     for modifier in parts:
         code |= MODIFIERS[modifier]
     return code
+
+
+def shortcut_codes(shortcuts):
+    """Encodes shortcut chords and rejects duplicate assignments."""
+    chords = {}
+    for action, sequence in shortcuts.items():
+        if not isinstance(sequence, str):
+            raise ValueError(f"Shortcut {action} must be a string.")
+        chords[action] = [key_code(sequence)] if sequence else []
+    assigned = [code for codes in chords.values() for code in codes]
+    if len(set(assigned)) != len(assigned):
+        raise ValueError("Shortcut chords must be unique.")
+    return chords
 
 
 def disable_desktop_effects(bus):
@@ -36,6 +49,8 @@ def disable_desktop_effects(bus):
 
 def reload_scripts(bus, plugins):
     """Reloads workspace scripts so installed code and saved settings take effect."""
+    if "krohnkite" in plugins:
+        raise RuntimeError("Krohnkite changes require a normal logout and login.")
     scripts = dbus.Interface(bus.get_object("org.kde.KWin", "/Scripting"), "org.kde.kwin.Scripting")
     for plugin in plugins:
         if scripts.isScriptLoaded(plugin) and not scripts.unloadScript(plugin):
@@ -51,6 +66,18 @@ def reload_scripts(bus, plugins):
     bus.call_blocking("org.kde.KWin", "/KWin", "org.kde.KWin", "reconfigure", "", ())
 
 
+def register_window_rules(names):
+    """Registers initial window rules after existing user rules without duplication."""
+    location = ["--file", "kwinrulesrc", "--group", "General", "--key", "rules"]
+    existing = subprocess.check_output(["kreadconfig6", *location], text=True).strip()
+    registered = existing.split(",") if existing else []
+    registered.extend(name for name in names if name not in registered)
+    encoded = ",".join(registered)
+    subprocess.run(["kwriteconfig6", *location, encoded], check=True)
+    if subprocess.check_output(["kreadconfig6", *location], text=True).strip() != encoded:
+        raise RuntimeError("KConfig did not retain window rule order.")
+
+
 def main():
     """Configures installed workspace components and checks native readbacks."""
     bus = dbus.SessionBus()
@@ -61,14 +88,17 @@ def main():
                               ("Plasma/Applet", "com.starboi.workspaces")):
         subprocess.run(["kpackagetool6", "--type", structure, "--show", plugin], check=True, stdout=subprocess.DEVNULL)
     shortcuts = json.loads((ROOT / "shortcuts.json").read_text())
-    chords = {action: key_code(sequence) for action, sequence in shortcuts.items()}
-    if len(set(chords.values())) != len(chords):
-        raise ValueError("Shortcut chords must be unique.")
+    chords = shortcut_codes(shortcuts)
 
+    settings = json.loads((ROOT / "settings.json").read_text())
+    style = json.loads((ROOT / "style.json").read_text())
+    settings["kwinrc"]["Script-krohnkite"].update({
+        "screenGap" + edge: style["bar"]["padding"] for edge in ("Left", "Right", "Top", "Between", "Bottom")
+    })
     changed_scripts = {"workspace-shortcuts"}
-    for filename, groups in json.loads((ROOT / "settings.json").read_text()).items():
-        for group, settings in groups.items():
-            for key, value in settings.items():
+    for filename, groups in settings.items():
+        for group, entries in groups.items():
+            for key, value in entries.items():
                 encoded = str(value).lower() if isinstance(value, bool) else str(value)
                 location = ["--file", filename, "--group", group, "--key", key]
                 previous = subprocess.check_output(["kreadconfig6", *location], text=True).strip()
@@ -78,6 +108,10 @@ def main():
                 actual = subprocess.check_output(["kreadconfig6", *location], text=True).strip()
                 if actual != encoded:
                     raise RuntimeError(f"KConfig did not retain {filename}/{group}/{key}.")
+    register_window_rules(settings["kwinrulesrc"])
+    if "krohnkite" in changed_scripts:
+        changed_scripts.remove("krohnkite")
+        print("Krohnkite settings changed. Log out and back in to load them without live script reloads.", flush=True)
     reload_scripts(bus, sorted(changed_scripts))
     disable_desktop_effects(bus)
     api = dbus.Interface(bus.get_object("org.kde.kglobalaccel", "/kglobalaccel"), "org.kde.KGlobalAccel")
@@ -91,21 +125,25 @@ def main():
     else:
         raise RuntimeError(f"Missing installed shortcut actions {sorted(set(chords) - set(actions))}")
 
-    for action, code in chords.items():
-        owner = list(map(str, api.action(code)))
-        if owner and owner[:2] != ["kwin", action]:
-            remaining = [int(key) for key in api.shortcut(owner) if int(key) != code]
-            print(f"Reassigning {shortcuts[action]} from {owner[0]}/{owner[1]}", flush=True)
-            api.setForeignShortcut(owner, dbus.Array(remaining, signature="i"))
-            if list(map(int, api.shortcut(owner))) != remaining:
-                raise RuntimeError(f"KDE did not preserve alternate shortcuts for {owner[0]}/{owner[1]}.")
-        api.setForeignShortcut(actions[action], dbus.Array([code], signature="i"))
-        if list(map(int, api.shortcut(actions[action]))) != [code] or list(map(str, api.action(code)))[:2] != ["kwin", action]:
+    for action, codes in chords.items():
+        for code in codes:
+            owner = list(map(str, api.action(code)))
+            if owner and owner[:2] != ["kwin", action]:
+                remaining = [int(key) for key in api.shortcut(owner) if int(key) != code]
+                print(f"Reassigning shortcut for {action} from {owner[0]}/{owner[1]}", flush=True)
+                api.setForeignShortcut(owner, dbus.Array(remaining, signature="i"))
+                if list(map(int, api.shortcut(owner))) != remaining:
+                    raise RuntimeError(f"KDE did not preserve alternate shortcuts for {owner[0]}/{owner[1]}.")
+        api.setForeignShortcut(actions[action], dbus.Array(codes, signature="i"))
+        if list(map(int, api.shortcut(actions[action]))) != codes or any(
+            list(map(str, api.action(code)))[:2] != ["kwin", action] for code in codes
+        ):
             raise RuntimeError(f"KDE did not assign {shortcuts[action]} to {action}.")
-    print(f"Verified {len(chords)} shortcut bindings.", flush=True)
+    print(f"Verified {sum(map(len, chords.values()))} shortcut bindings.", flush=True)
 
     plasma = dbus.Interface(bus.get_object("org.kde.plasmashell", "/PlasmaShell"), "org.kde.PlasmaShell")
     print(plasma.evaluateScript(panel_script, timeout=30))
+    bus.call_blocking("org.kde.KWin", "/KWin", "org.kde.KWin", "reconfigure", "", ())
 
 
 if __name__ == "__main__":

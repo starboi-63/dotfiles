@@ -1,11 +1,14 @@
 (() => {
     const workspacePlugin = "com.starboi.workspaces";
     const existingPanels = panels();
+    if (existingPanels.some(panel => !Number.isInteger(panel.screen) || panel.screen < 0)) {
+        throw new Error("Plasma panels have unassigned screens. Finish startup or resolve inactive panels before applying.");
+    }
     const reference = existingPanels.find(panel => panel.location === "bottom");
     if (!reference || !Number.isInteger(reference.height) || reference.height <= 0) {
         throw new Error("An existing bottom panel with a valid height is required.");
     }
-    const panelHeight = reference.height;
+    const panelHeight = style.bar.height;
     const panelOpacity: PanelOpacity = "translucent";
     const screenIds = [...new Set(desktops().map(desktop => desktop.screen))].filter(screen => screen >= 0);
     if (!screenIds.length || screenIds.some(screen => !Number.isInteger(screen))) {
@@ -121,13 +124,13 @@
             showDate: true,
             dateDisplayFormat: 1,
             dateFormat: "custom",
-            customDateFormat: "ddd MMM d",
+            customDateFormat: style.status.dateFormat,
             use24hFormat: 0,
             showSeconds: 0,
             autoFontAndSize: false,
             fontSize: 10,
-            fontWeight: 400,
-            fontFamily: "Adwaita Sans",
+            fontWeight: style.status.fontWeight,
+            fontFamily: style.status.fontFamily,
             showLocalTimezone: false,
         } satisfies ClockSettings;
         configureWidget(clock, "Appearance", settings);
@@ -152,8 +155,6 @@
             addWidget(bottom, "org.kde.plasma.kickoff");
             addWidget(bottom, "org.kde.plasma.icontasks");
             configurePanel(bottom, screen, "bottom");
-            setPanelValue(bottom, "lengthMode", "fit");
-            setPanelValue(bottom, "hiding", "autohide");
             plan.bottom = bottom;
         }
         if (!plan.top) {
@@ -169,6 +170,15 @@
             throw new Error(`Screen ${screen} is missing a prepared panel.`);
         }
         configurePanel(top, screen, "top");
+        setPanelValue(bottom, "lengthMode", "fit");
+        setPanelValue(bottom, "alignment", "center");
+        setPanelValue(bottom, "offset", 0);
+        setPanelValue(bottom, "hiding", "autohide");
+        setPanelValue(bottom, "floating", true);
+        const workspace = panelWidgets(top).find(widget => widget.type === workspacePlugin);
+        if (!workspace) {
+            throw new Error(`Panel ${top.id} has no workspace widget.`);
+        }
         const rightWidgets: PlasmaWidget[] = [];
         for (const plugin of ["org.kde.plasma.systemtray", "org.kde.plasma.digitalclock"]) {
             const source = panelWidgets(bottom).find(widget => widget.type === plugin);
@@ -183,6 +193,12 @@
             rightWidgets.push(source ? moveWidget(bottom, top, widget) : widget);
         }
 
+        configureWidget(workspace, "General", {
+            maximumIcons: style.workspaces.maximumIcons,
+            keepFloating: style.bar.keepFloating,
+            backgroundOpacity: style.bar.opacity,
+        });
+
         const peekPlugin = "org.kde.plasma.showdesktop";
         const topPeek = panelWidgets(top).find(widget => widget.type === peekPlugin);
         const bottomPeek = panelWidgets(bottom).find(widget => widget.type === peekPlugin);
@@ -194,7 +210,8 @@
         configureWidget(top, "General", { AppletOrder: [...leftWidgets, ...rightWidgets].map(widget => widget.id).join(";") });
 
         for (const widget of panelWidgets(bottom)) {
-            if (widget.type === "org.kde.plasma.pager" || widget.type === "org.kde.plasma.marginsseparator") {
+            if (["org.kde.plasma.pager", "org.kde.plasma.marginsseparator", "org.kde.plasma.panelspacer"]
+                .includes(widget.type)) {
                 const widgetId = widget.id;
                 widget.remove();
                 print(`Requested removal of obsolete dock widget ${widgetId} from panel ${bottom.id}.`);

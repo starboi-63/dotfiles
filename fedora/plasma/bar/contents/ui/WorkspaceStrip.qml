@@ -1,9 +1,9 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "Style.js" as Style
 import QtQuick.Controls as Controls
 import org.kde.kirigami as Kirigami
-import org.kde.plasma.core as PlasmaCore
 import org.kde.taskmanager as TaskManager
 
 Item {
@@ -13,14 +13,14 @@ Item {
     required property var desktopNames
     required property rect screenGeometry
     required property int currentDesktop
-    property int maximumIcons: 6
+    property int maximumIcons: Style.config.workspaces.maximumIcons
     property string errorMessage: ""
 
     signal desktopActivated(int position)
     signal desktopCreated()
 
     implicitWidth: desktopRow.implicitWidth
-    implicitHeight: 34
+    implicitHeight: Style.config.workspaces.height
 
     function revealCurrent() {
         const button = desktopButtons.itemAt(currentDesktop);
@@ -44,7 +44,7 @@ Item {
         id: viewport
 
         anchors.fill: parent
-        anchors.margins: 2
+        anchors.margins: Style.config.workspaces.inset
         contentWidth: desktopRow.implicitWidth
         contentHeight: height
         clip: true
@@ -56,7 +56,7 @@ Item {
             id: desktopRow
 
             height: viewport.height
-            spacing: Kirigami.Units.smallSpacing
+            spacing: Style.config.workspaces.spacing
 
             Repeater {
                 id: desktopButtons
@@ -83,8 +83,8 @@ Item {
                     objectName: "desktop-" + index
                     height: desktopRow.height
                     width: contentRow.implicitWidth + leftPadding + rightPadding
-                    leftPadding: 12
-                    rightPadding: 12
+                    leftPadding: Style.config.workspaces.padding
+                    rightPadding: Style.config.workspaces.padding
                     hoverEnabled: true
                     Accessible.name: desktopName
                     Accessible.description: "Switch to workspace " + (index + 1)
@@ -92,17 +92,17 @@ Item {
                     onClicked: root.desktopActivated(index)
 
                     background: Rectangle {
-                        radius: Kirigami.Units.cornerRadius
+                        radius: Style.config.workspaces.cornerRadius
                         color: desktopButton.active
-                            ? Qt.alpha(Kirigami.Theme.highlightColor, 0.22)
-                            : Qt.alpha(Kirigami.Theme.textColor, desktopButton.hovered ? 0.10 : 0.04)
+                            ? Qt.alpha(Kirigami.Theme.highlightColor, Style.config.workspaces.activeOpacity)
+                            : Qt.alpha(Kirigami.Theme.textColor, desktopButton.hovered ? Style.config.workspaces.hoverOpacity : Style.config.workspaces.idleOpacity)
                         border.width: desktopButton.active || desktopButton.visualFocus ? 1 : 0
-                        border.color: Qt.alpha(Kirigami.Theme.highlightColor, 0.65)
+                        border.color: Qt.alpha(Kirigami.Theme.highlightColor, Style.config.workspaces.borderOpacity)
                     }
 
                     contentItem: Row {
                         id: contentRow
-                        spacing: 7
+                        spacing: Style.config.workspaces.iconSpacing
 
                         Controls.Label {
                             anchors.verticalCenter: parent.verticalCenter
@@ -110,11 +110,10 @@ Item {
                             font.weight: Font.DemiBold
                             color: Kirigami.Theme.textColor
 
-                            PlasmaCore.ToolTipArea {
+                            PanelToolTip {
                                 anchors.fill: parent
                                 mainText: desktopButton.desktopName
                                 subText: windows.count + (windows.count === 1 ? " window" : " windows")
-                                textFormat: Text.PlainText
                             }
                         }
 
@@ -133,66 +132,32 @@ Item {
 
                                 anchors.verticalCenter: parent.verticalCenter
                                 visible: index < root.maximumIcons
-                                width: visible ? 20 : 0
-                                height: 22
+                                width: visible ? Style.config.workspaces.iconWidth : 0
+                                height: Style.config.workspaces.iconHeight
 
                                 Kirigami.Icon {
                                     anchors.centerIn: parent
-                                    width: 18
-                                    height: 18
+                                    width: Style.config.workspaces.iconSize
+                                    height: Style.config.workspaces.iconSize
                                     source: windowItem.decoration || "application-x-executable"
                                     animated: false
-                                    opacity: windowItem.model.IsMinimized ? 0.5 : 1
+                                    opacity: windowItem.model.IsMinimized ? Style.config.workspaces.minimizedOpacity : 1
                                 }
 
                                 Rectangle {
                                     anchors.bottom: parent.bottom
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    width: 3
-                                    height: 3
-                                    radius: 2
+                                    width: Style.config.workspaces.indicatorSize
+                                    height: Style.config.workspaces.indicatorSize
+                                    radius: Style.config.workspaces.indicatorRadius
                                     visible: windowItem.model.IsActive
                                     color: Kirigami.Theme.highlightColor
                                 }
 
-                                HoverHandler { id: iconHover }
-
-                                Controls.ToolTip {
-                                    id: windowTooltip
-
-                                    visible: iconHover.hovered
-                                    delay: 450
-                                    contentItem: Item {
-                                        implicitWidth: Math.min(360, Math.max(applicationLabel.implicitWidth, titleLabel.implicitWidth))
-                                        implicitHeight: tooltipText.implicitHeight
-
-                                        Column {
-                                            id: tooltipText
-                                            width: parent.width
-                                            spacing: 2
-
-                                            Controls.Label {
-                                                id: applicationLabel
-                                                width: parent.width
-                                                text: windowItem.applicationName || windowItem.display
-                                                font.pointSize: windowTooltip.font.pointSize
-                                                font.weight: Font.DemiBold
-                                                textFormat: Text.PlainText
-                                                wrapMode: Text.Wrap
-                                            }
-
-                                            Controls.Label {
-                                                id: titleLabel
-                                                width: parent.width
-                                                visible: windowItem.applicationName.length > 0 && windowItem.applicationName !== windowItem.display
-                                                text: windowItem.display
-                                                font: windowTooltip.font
-                                                opacity: 0.75
-                                                textFormat: Text.PlainText
-                                                wrapMode: Text.Wrap
-                                            }
-                                        }
-                                    }
+                                PanelToolTip {
+                                    anchors.fill: parent
+                                    mainText: windowItem.applicationName || windowItem.display
+                                    subText: windowItem.applicationName ? windowItem.display : ""
                                 }
                             }
                         }
@@ -201,14 +166,14 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: windows.count > root.maximumIcons
                             text: "+" + (windows.count - root.maximumIcons)
-                            opacity: 0.7
+                            opacity: Style.config.workspaces.overflowOpacity
                         }
 
                         Controls.Label {
                             anchors.verticalCenter: parent.verticalCenter
                             visible: windows.count === 0
                             text: "·"
-                            opacity: 0.4
+                            opacity: Style.config.workspaces.emptyOpacity
                         }
                     }
                 }
@@ -217,13 +182,15 @@ Item {
             Controls.ToolButton {
                 objectName: "create-desktop"
                 anchors.verticalCenter: parent.verticalCenter
-                width: 30
+                width: Style.config.workspaces.createWidth
                 height: desktopRow.height
                 icon.name: "list-add"
                 Accessible.name: "Create desktop"
                 onClicked: root.desktopCreated()
-                Controls.ToolTip.visible: hovered
-                Controls.ToolTip.text: "Create desktop (Alt+N)"
+                PanelToolTip {
+                    anchors.fill: parent
+                    mainText: "Create desktop (Alt+N)"
+                }
             }
 
             Controls.Label {

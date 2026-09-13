@@ -74,7 +74,7 @@ const shortcuts = [
     { name: "WorkspaceRemove", label: "Remove Current Desktop", callback: removeDesktop },
     { name: "WorkspaceMovePrevious", label: "Move Window to Previous Desktop and Follow", callback: () => moveWindow(-1) },
     { name: "WorkspaceMoveNext", label: "Move Window to Next Desktop and Follow", callback: () => moveWindow(1) },
-    { name: "WorkspaceTogglePanel", label: "Toggle Workspace Panel Floating", callback: togglePanel },
+    { name: "Panel Toggle Floating", label: "Toggle Panel Floating", callback: togglePanel },
 ];
 
 for (const shortcut of shortcuts) {

@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 
-const source = fs.readFileSync(path.join(__dirname, "../.build/kwin/workspaces/contents/code/main.js"), "utf8");
+const source = fs.readFileSync(path.join(__dirname, "../.build/kwin/shortcuts/contents/code/main.js"), "utf8");
 
 function session(count = 3) {
     const desktops = Array.from({ length: count }, (_, index) => ({ id: String(index) }));

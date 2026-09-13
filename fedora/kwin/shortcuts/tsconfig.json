@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "rootDir": ".",
-    "outDir": "../../.build/kwin/workspaces"
+    "outDir": "../../.build/kwin/shortcuts"
   },
   "files": ["api.d.ts", "contents/code/main.ts"]
 }

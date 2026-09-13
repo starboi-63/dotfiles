@@ -8,16 +8,29 @@
     "Plugins": {
       "slideEnabled": false,
       "fadedesktopEnabled": false,
+      "maximizeEnabled": true,
       "krohnkiteEnabled": true,
       "workspace-shortcutsEnabled": true
     },
     "Script-krohnkite": {
-      "screenDefaultLayout": ":tilelayout",
-      "screenGapLeft": 8,
-      "screenGapRight": 8,
-      "screenGapTop": 16,
-      "screenGapBottom": 8,
-      "screenGapBetween": 8
+      "screenDefaultLayout": ":columnslayout",
+      "columnsLayoutInitialRotationAngle": "3",
+      "columnsLayerConf": ":::1:1",
+      "columnsBalanced": false,
+      "monocleMaximize": false,
+      "monocleMinimizeRest": false
+    }
+  },
+  "kwinrulesrc": {
+    "initial-tiling": {
+      "Description": "Open normal windows ready for tiling",
+      "types": 1,
+      "hastransientparent": false,
+      "hastransientparentmatch": 1,
+      "maximizehoriz": false,
+      "maximizehorizrule": 3,
+      "maximizevert": false,
+      "maximizevertrule": 3
     }
   }
 }

@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import "Style.js" as Style
 import QtQml.Models
 import org.kde.kirigami as Kirigami
 
@@ -11,6 +12,9 @@ Item {
     property Item tray: null
     property Item expander: null
     property string errorMessage: ""
+    property bool stylingEnabled: true
+
+    Component.onDestruction: stylingEnabled = false
 
     function findTray(item, depth) {
         if (!item || depth > 16) {
@@ -34,9 +38,30 @@ Item {
         if (tray && expander) {
             discovery.stop();
             errorMessage = "";
+            updateLoaders();
         } else if (++discovery.attempts >= 20) {
             discovery.stop();
             errorMessage = "Tray appearance requires the tested Plasma tray layout.";
+        }
+    }
+
+    function updateLoaders() {
+        const currentLoaders = tray?.visibleLayout.contentItem.children.filter(child => child instanceof Loader) ?? [];
+        const retainedLoaders = [];
+
+        // Preserves existing bindings when native tray delegates change.
+        for (let index = iconLoaders.count - 1; index >= 0; --index) {
+            const loader = iconLoaders.get(index).loader;
+            if (!currentLoaders.includes(loader)) {
+                iconLoaders.remove(index);
+            } else {
+                retainedLoaders.push(loader);
+            }
+        }
+        for (const loader of currentLoaders) {
+            if (!retainedLoaders.includes(loader)) {
+                iconLoaders.append({loader});
+            }
         }
     }
 
@@ -52,29 +77,36 @@ Item {
     Binding {
         target: root.tray?.visibleLayout ?? null
         property: "cellWidth"
-        value: 28
-        when: root.tray !== null
+        value: Style.config.status.size + Style.config.status.spacing
+        when: root.stylingEnabled && root.tray !== null
         restoreMode: Binding.RestoreBindingOrValue
     }
 
+    ListModel { id: iconLoaders }
+
+    Connections {
+        target: root.tray?.visibleLayout.contentItem ?? null
+        function onChildrenChanged() { Qt.callLater(root.updateLoaders); }
+    }
+
     Instantiator {
-        model: root.tray?.visibleLayout.contentItem.children ?? []
+        model: iconLoaders
 
         delegate: QtObject {
-            required property var modelData
-            readonly property Item icon: modelData.item?.iconContainer ?? null
+            required property Item loader
+            readonly property Item icon: loader?.item?.iconContainer ?? null
             property Binding iconWidth: Binding {
                 target: icon
                 property: "implicitWidth"
-                value: 18
-                when: icon !== null
+                value: Style.config.status.size
+                when: root.stylingEnabled && icon !== null
                 restoreMode: Binding.RestoreBindingOrValue
             }
             property Binding iconHeight: Binding {
                 target: icon
                 property: "implicitHeight"
-                value: 18
-                when: icon !== null
+                value: Style.config.status.size
+                when: root.stylingEnabled && icon !== null
                 restoreMode: Binding.RestoreBindingOrValue
             }
         }
@@ -83,8 +115,8 @@ Item {
     Binding {
         target: root.expander
         property: "iconSize"
-        value: 24
-        when: root.expander !== null
+        value: Style.config.status.size + Style.config.status.spacing
+        when: root.stylingEnabled && root.expander !== null
         restoreMode: Binding.RestoreBindingOrValue
     }
 
@@ -95,6 +127,7 @@ Item {
             target: modelData
             property: "visible"
             value: false
+            when: root.stylingEnabled
             restoreMode: Binding.RestoreBindingOrValue
         }
     }
@@ -103,17 +136,17 @@ Item {
         id: chevron
         parent: root.expander
         anchors.centerIn: parent
-        width: 18
-        height: 18
+        width: Style.config.status.size
+        height: Style.config.status.size
         visible: root.expander !== null
-        source: Qt.resolvedUrl("../images/chevron.svg")
+        source: Qt.resolvedUrl("../icons/chevron.svg")
         isMask: true
         color: Kirigami.Theme.textColor
         rotation: root.tray?.systemTrayState.expanded ? 180 : 0
 
         Behavior on rotation {
             NumberAnimation {
-                duration: Kirigami.Units.shortDuration > 0 ? 140 : 0
+                duration: Kirigami.Units.shortDuration > 0 ? Style.config.status.chevronDuration : 0
                 easing.type: Easing.OutCubic
             }
         }

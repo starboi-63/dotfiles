@@ -1,4 +1,5 @@
 import QtQuick
+import "Style.js" as Style
 import QtQuick.Layouts
 import org.kde.plasma.plasmoid
 import org.kde.plasma.core as PlasmaCore
@@ -9,11 +10,11 @@ PlasmoidItem {
 
     Plasmoid.status: PlasmaCore.Types.ActiveStatus
     preferredRepresentation: fullRepresentation
-    Layout.minimumWidth: 440
-    Layout.preferredWidth: 640
+    Layout.minimumWidth: Style.config.bar.minimumWidth
+    Layout.preferredWidth: Style.config.bar.preferredWidth
     Layout.fillWidth: true
     Layout.fillHeight: true
-    Layout.minimumHeight: 34
+    Layout.minimumHeight: Style.config.workspaces.height
 
     DesktopModel {
         id: desktops
@@ -32,14 +33,19 @@ PlasmoidItem {
         panelView: appearance.panelView
     }
 
+    ClockAppearance {
+        id: clockAppearance
+        panelView: appearance.panelView
+    }
+
     fullRepresentation: RowLayout {
-        spacing: 12
+        spacing: Style.config.bar.sectionSpacing
 
         Kirigami.Icon {
-            Layout.preferredWidth: 20
-            Layout.preferredHeight: 20
-            Layout.leftMargin: 8
-            source: Qt.resolvedUrl("../images/fedora.svg")
+            Layout.preferredWidth: Style.config.bar.logoSize
+            Layout.preferredHeight: Style.config.bar.logoSize
+            Layout.leftMargin: Style.config.bar.padding
+            source: Qt.resolvedUrl("../icons/fedora.svg")
             isMask: true
             color: Kirigami.Theme.textColor
             Accessible.name: "Fedora"
@@ -48,20 +54,20 @@ PlasmoidItem {
         WorkspaceStrip {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.minimumWidth: 100
+            Layout.minimumWidth: Style.config.workspaces.minimumWidth
             desktopIds: desktops.desktopIds
             desktopNames: desktops.desktopNames
             currentDesktop: desktops.desktopIds.indexOf(desktops.currentDesktop)
             screenGeometry: Plasmoid.containment.screenGeometry
             maximumIcons: Plasmoid.configuration.maximumIcons
-            errorMessage: desktops.errorMessage || appearance.errorMessage || trayAppearance.errorMessage
+            errorMessage: desktops.errorMessage || appearance.errorMessage || trayAppearance.errorMessage || clockAppearance.errorMessage
 
             onDesktopActivated: position => desktops.changeDesktop(position)
             onDesktopCreated: desktops.createDesktop()
         }
 
         SystemStats {
-            Layout.rightMargin: 4
+            Layout.rightMargin: 0
         }
     }
 }
