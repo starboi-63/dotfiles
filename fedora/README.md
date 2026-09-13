@@ -60,8 +60,6 @@ Configuration modifies these files under `$XDG_CONFIG_HOME`, normally `~/.config
 - `kglobalshortcutsrc` for requested shortcuts and conflicting assignments. Unrelated alternate shortcuts are preserved.
 - `plasma-org.kde.plasma.desktop-appletsrc` and `plasmashellrc` for widgets and panel settings.
 
-Back up existing files and package directories before applying to another machine. Readback checks detect rejected changes but do not provide automatic rollback. Restore configuration while logged out of Plasma. Use a separate user or VM for isolated desktop installation tests.
-
 ## Shortcuts
 
 Option corresponds to Alt. Desktop numbers use Plasma's shared desktop list; each monitor independently selects its current desktop. Creating or removing a desktop changes the shared list.
