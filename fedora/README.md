@@ -4,6 +4,14 @@ Adds a custom top bar, a styled bottom dock, and shortcuts for workspace switchi
 
 Requires Plasma 6.7 or newer on Wayland.
 
+Shared Vim, Zsh, Powerlevel10k, and Ghostty settings are installed separately. From this directory:
+
+```sh
+python3 ../scripts/link.py fedora
+```
+
+See [shared configuration](../shared/README.md) for prerequisites and OS overrides.
+
 ## Configuration
 
 | File | Purpose |
