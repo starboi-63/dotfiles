@@ -1,18 +1,33 @@
-# Fedora Plasma configuration
+# Fedora
 
-Adds a custom top bar, a styled bottom dock, and shortcuts for workspace switching and window tiling.
+![Fedora desktop](./desktop.png)
 
-Requires Plasma 6.7 or newer on Wayland.
+My personal configurations for:
 
-Shared Vim, Zsh, Powerlevel10k, and Ghostty settings are installed separately. From this directory:
+- [Vim](https://github.com/vim/vim)
+- [Oh My Zsh](https://github.com/ohmyzsh/ohmyzsh)
+- [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
+- [Ghostty](https://ghostty.org/)
+- [KDE Plasma](https://kde.org/plasma-desktop/)
+- [KWin](https://github.com/KDE/kwin)
+- [Krohnkite](https://codeberg.org/anametologin/Krohnkite)
+- [Workspace Bar](plasma/bar/)
+- [Dock Appearance](plasma/dock/)
+- [Workspace Shortcuts](kwin/shortcuts/)
+
+## Setup
+
+From the repository root, link shared settings and Fedora configuration:
 
 ```sh
-python3 ../scripts/link.py fedora
+python3 scripts/link.py fedora
 ```
 
 See [shared configuration](../shared/README.md) for prerequisites and OS overrides.
 
-## Configuration
+## Desktop configuration
+
+The bar, dock, and tiling shortcuts require Plasma 6.7 or newer on Wayland.
 
 | File | Purpose |
 | --- | --- |
@@ -27,7 +42,7 @@ The bar's settings dialog also lets you change background opacity, floating beha
 
 ## Build
 
-Requires Python 3 and a TypeScript compiler. No npm dependencies are needed. Run commands from this directory.
+Requires Python 3 and a TypeScript compiler. Run the remaining commands from `fedora/`.
 
 Download the archive pinned in `dependencies.json`:
 

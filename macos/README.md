@@ -15,7 +15,7 @@ My personal configurations for:
 
 ## Setup
 
-From the repository root, link common settings and macOS configuration:
+From the repository root, link shared settings and macOS configuration:
 
 ```sh
 python3 scripts/link.py macos
