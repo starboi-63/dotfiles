@@ -1,17 +1,6 @@
-# dotfiles
+# Desktop configuration
 
-![Desktop Screenshot](./desktop.png)
+- [macOS](macos/README.md) contains existing configuration without content changes.
+- [Fedora](fedora/README.md) contains the Plasma workspace setup and installation instructions.
 
-My personal configurations for:
-
-- [Vim](https://github.com/vim/vim)
-- [Neovim](https://neovim.io/)
-- [Oh My Zsh](https://github.com/ohmyzsh/ohmyzsh)
-- [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
-- [Ghostty](https://ghostty.org/)
-- [kitty](https://sw.kovidgoyal.net/kitty/)
-- [Zellij](https://zellij.dev/)
-- [yabai](https://github.com/koekeishiya/yabai)
-- [skhd](https://github.com/koekeishiya/skhd)
-- [SketchyBar](https://github.com/FelixKratz/SketchyBar)
-- [JankyBorders](https://github.com/FelixKratz/JankyBorders)
+The Fedora setup includes a native menu bar, an auto-hide dock, and workspace shortcuts. See its [verification record](fedora/TESTING.md) for tested behavior on Plasma 6.7.4 and remaining checks.

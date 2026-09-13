@@ -1,0 +1,23 @@
+{
+  "kwinrc": {
+    "Windows": {
+      "PerOutputVirtualDesktops": true,
+      "RollOverDesktops": false,
+      "SeparateScreenFocus": true
+    },
+    "Plugins": {
+      "slideEnabled": false,
+      "fadedesktopEnabled": false,
+      "krohnkiteEnabled": true,
+      "workspace-shortcutsEnabled": true
+    },
+    "Script-krohnkite": {
+      "screenDefaultLayout": ":tilelayout",
+      "screenGapLeft": 8,
+      "screenGapRight": 8,
+      "screenGapTop": 16,
+      "screenGapBottom": 8,
+      "screenGapBetween": 8
+    }
+  }
+}

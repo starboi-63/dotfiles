@@ -1,0 +1,14 @@
+{
+  "KPackageStructure": "KWin/Script",
+  "KPlugin": {
+    "Id": "workspace-shortcuts",
+    "Name": "Workspace Shortcuts",
+    "Description": "Desktop creation, removal, and window movement for Plasma",
+    "Version": "1.0.0",
+    "License": "MIT",
+    "Authors": [{ "Name": "Tanish Makadia" }]
+  },
+  "X-Plasma-API": "javascript",
+  "X-Plasma-MainScript": "code/main.js",
+  "X-Plasma-API-Minimum-Version": "6.7"
+}
