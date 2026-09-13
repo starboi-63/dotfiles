@@ -18,7 +18,7 @@ My personal configurations for:
 From the repository root, link shared settings and macOS configuration:
 
 ```sh
-python3 scripts/link.py macos
+python3 shared/scripts/link.py macos
 ```
 
 See [shared configuration](../shared/README.md) for prerequisites and OS overrides.

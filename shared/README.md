@@ -14,7 +14,7 @@ Shared defaults live in `shared/home/`, with OS overrides in `fedora/home/` and 
 Install Python 3, Vim, Ghostty, Zsh, Oh My Zsh, Powerlevel10k, and the plugins listed in your OS's `.zshrc`. From the repository root, run this command with `fedora` or `macos`:
 
 ```sh
-python3 scripts/link.py fedora
+python3 shared/scripts/link.py fedora
 ```
 
 The script symlinks configuration into your home directory, so keep the repository at a stable path. Move reported conflicts aside and rerun. When migrating Ghostty, also move its old `config` file aside; this setup uses `config.ghostty`.

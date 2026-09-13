@@ -20,7 +20,7 @@ My personal configurations for:
 From the repository root, link shared settings and Fedora configuration:
 
 ```sh
-python3 scripts/link.py fedora
+python3 shared/scripts/link.py fedora
 ```
 
 See [shared configuration](../shared/README.md) for prerequisites and OS overrides.
