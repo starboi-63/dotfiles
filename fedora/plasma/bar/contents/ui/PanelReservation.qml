@@ -9,6 +9,9 @@ Item {
     property bool reserveFloating: true
     property string errorMessage: ""
     property int appliedZone: -1
+    property QtObject reservedWindow: null
+    property QtObject reservedLayerWindow: null
+    property bool releasing: false
     readonly property var panelWindow: panelView?.Window.window ?? null
     readonly property var layerWindow: panelWindow?.LayerShell.Window ?? null
 
@@ -20,7 +23,9 @@ Item {
         + (reserveFloating && panelView.floating ? panelView.fixedTopFloatingPadding : 0)
 
     function updateReservation() {
-        if (!active || !layerWindow || layerWindow.exclusionZone < 0) return;
+        if (releasing) return;
+        if (reservedWindow !== panelWindow) releaseReservation();
+        if (!active || !layerWindow || layerWindow !== panelWindow.LayerShell.Window || layerWindow.exclusionZone < 0) return;
         if (reservedHeight < panelWindow.thickness || typeof panelWindow.update !== "function") {
             errorMessage = "Panel reservation requires the tested Plasma window interface.";
             return;
@@ -30,17 +35,23 @@ Item {
             panelWindow.update();
         }
         appliedZone = reservedHeight;
+        reservedWindow = panelWindow;
+        reservedLayerWindow = layerWindow;
         errorMessage = layerWindow.exclusionZone === reservedHeight
             ? "" : "Plasma did not retain the floating panel reservation.";
     }
 
     function releaseReservation() {
-        if (appliedZone < 0 || !panelWindow || !layerWindow || panelWindow.userConfiguring) return;
-        if (layerWindow.exclusionZone === appliedZone) {
-            layerWindow.exclusionZone = normalPanel ? panelWindow.thickness : -1;
-            panelWindow.update();
+        if (appliedZone < 0 || !reservedWindow || !reservedLayerWindow || reservedWindow.userConfiguring) return;
+        releasing = true;
+        if (reservedLayerWindow.exclusionZone === appliedZone) {
+            reservedLayerWindow.exclusionZone = reservedWindow.visibilityMode === 0 ? reservedWindow.thickness : -1;
+            reservedWindow.update();
         }
         appliedZone = -1;
+        reservedWindow = null;
+        reservedLayerWindow = null;
+        releasing = false;
     }
 
     Connections {
@@ -51,6 +62,10 @@ Item {
     onActiveChanged: {
         if (active) Qt.callLater(updateReservation);
         else releaseReservation();
+    }
+    onPanelWindowChanged: {
+        if (reservedWindow !== panelWindow) releaseReservation();
+        Qt.callLater(updateReservation);
     }
     onReservedHeightChanged: updateReservation()
     Component.onCompleted: Qt.callLater(updateReservation)

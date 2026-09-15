@@ -1,0 +1,1 @@
+../../../shared/PanelAttachment.qml

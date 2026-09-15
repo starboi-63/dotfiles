@@ -120,6 +120,7 @@ Check tray sizing, tooltips, panel spacing, opacity restoration, and window rule
 python3 tests/tray.py
 python3 tests/tooltip.py
 python3 tests/reservation.py
+python3 tests/appearance.py
 python3 tests/opacity.py
 python3 tests/rules.py
 ```

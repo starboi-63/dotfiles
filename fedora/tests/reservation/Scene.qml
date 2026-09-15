@@ -11,9 +11,11 @@ Window {
     property int visibilityMode: 0
     property bool userConfiguring: false
     property bool styling: true
+    property bool alternate: false
     property alias floating: panel.floating
     property alias padding: panel.fixedTopFloatingPadding
     readonly property int zone: LayerShell.Window.exclusionZone
+    readonly property int alternateZone: alternateWindow.LayerShell.Window.exclusionZone
     property int changes: 0
     LayerShell.Window.exclusionZone: 46
 
@@ -29,7 +31,22 @@ Window {
         property int fixedTopFloatingPadding: 8
         Loader {
             active: root.styling
-            sourceComponent: Workspace.PanelReservation { panelView: panel }
+            sourceComponent: Workspace.PanelReservation { panelView: root.alternate ? alternatePanel : panel }
+        }
+    }
+
+    Window {
+        id: alternateWindow
+        width: 600
+        height: 70
+        property int thickness: 54
+        property int visibilityMode: 0
+        property bool userConfiguring: false
+        LayerShell.Window.exclusionZone: 54
+        Item {
+            id: alternatePanel
+            property bool floating: true
+            property int fixedTopFloatingPadding: 8
         }
     }
 

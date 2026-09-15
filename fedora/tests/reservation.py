@@ -44,6 +44,12 @@ def main():
     window.setProperty("floating", True)
     check("repeated floating assignment", 54)
     assert window.property("changes") == changes
+    window.setProperty("alternate", True)
+    check("previous panel releases reservation", 46)
+    assert window.property("alternateZone") == 62
+    window.setProperty("alternate", False)
+    check("original panel regains reservation", 54)
+    assert window.property("alternateZone") == 54
     native_zone(46)
     check("native reservation overwrite", 54)
     window.setProperty("thickness", 50)
